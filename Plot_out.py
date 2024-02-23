@@ -43,4 +43,4 @@ simul = Sim2.Sim2(5, time_step , base)
 simul2 = Sim2.Sim2(5,time_step,second_base )
 first_plot = Plot_out(base, time_step )
 
-first_plot.plot(simul.next()[0],simul.next()[1]simul2)
+first_plot.plot(simul.next()[0],simul.next()[1], simul2.next()[1])
