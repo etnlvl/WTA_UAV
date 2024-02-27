@@ -5,7 +5,7 @@ import numpy as np
 import Weapons
 
 class Drone:
-    def __init__(self, pos, idx, close_drone=None):
+    def __init__(self, pos, idx, value_obj, close_drone=None):
         self.active = 1   # says if the drone is still in state of function
         self.close_drone = close_drone
         self.pos = pos
@@ -14,16 +14,20 @@ class Drone:
                                         #distance to the base decrease.
         self.path = []
         self.speed = np.array([-1,-1,-0.5])    # ~100km/h
+        self.value_obj = value_obj
 
 
     def drone_get_destroyed(self,weapon):
         if np.random.rand() < weapon.Pc :  #### It means that the drone has been hit so the active value of it is updated to 0.
             self.active = 0
             self.pos = np.array([np.inf,np.inf,np.inf])
+
             print(f'Drone {self.idx} has been destroyed by : {weapon.name}')
+            return True
         else:  #### The drone will not be hit at this time step, so we need to upgrade the threat value.
             self.threat_val += 1
             print(f'Drone {self.idx} has been missed by : {weapon.name}')
+            return False
 
     def update_drone_pos(self, time):  #### Update the position of the drone
         self.pos += self.speed * time
@@ -48,14 +52,14 @@ class Wave :
             left_side[l][0], left_side[l][1], left_side[l][2] = self.head_position[0] - (l + 1) * x_dist, self.head_position[1] - (
                         l + 1) * y_dist, self.head_position[2]
             point1 = left_side[l]
-            drl = Drone(point1, l,)
+            drl = Drone(point1, l, 0)
             self.drone_list.append(drl)
         self.drone_list.append(self.head_position)
         for r in range(0, nbr):
             right_side[r][0], right_side[r][1], right_side[r][2] = self.head_position[0] + (r + 1) * x_dist, self.head_position[1] - (
                         r + 1) * y_dist, self.head_position[2]
             point2 = right_side[r]
-            drr = Drone(point2, r+nbl)
+            drr = Drone(point2, r+nbl, 0)
             self.drone_list.append(drr)
         pos = np.vstack((np.vstack((np.array(self.head_position), left_side)), right_side))   # joining the 2 sequences, left side and right side
 
@@ -74,7 +78,7 @@ class Wave :
                                                                 self.head_position[1] - (
                                                                         l + 1) * y_dist, self.head_position[2]
             point1 = left_side1[l]
-            drl = Drone(point1, l)
+            drl = Drone(point1, l, 0)
             self.drone_list.append(drl)
         self.drone_list.append(self.head_position)
         for r in range(0, nbr):
@@ -82,7 +86,7 @@ class Wave :
                                                                    self.head_position[1] - (
                                                                            r + 1) * y_dist, self.head_position[2]
             point2 = right_side1[r]
-            drr = Drone(point2, r + nbl)
+            drr = Drone(point2, r + nbl, 0)
             self.drone_list.append(drr)
         pos1 = np.vstack((np.vstack((np.array(self.head_position), left_side1)), right_side1))
 
@@ -96,7 +100,7 @@ class Wave :
                                                                 new_head_pos[1] - (
                                                                         l + 1) * y_dist, new_head_pos[2]
             point1 = left_side2[l]
-            drl = Drone(point1, l)
+            drl = Drone(point1, l,0 )
             self.drone_list.append(drl)
         self.drone_list.append(new_head_pos)
         for r in range(0, nbr):
@@ -104,7 +108,7 @@ class Wave :
                                                                    new_head_pos[1] - (
                                                                            r + 1) * y_dist, new_head_pos[2]
             point2 = right_side2[r]
-            drr = Drone(point2, r + nbl)
+            drr = Drone(point2, r + nbl, 0)
             self.drone_list.append(drr)
         pos2 = np.vstack((np.vstack((np.array(new_head_pos), left_side2)), right_side2))
 
@@ -134,7 +138,7 @@ class Ball:
             x = np.cos(theta) * radius_at_height
             z = np.sin(theta) * radius_at_height
             point = self.center + np.array([x, y * self.diameter/2, z])
-            dr = Drone(point, i)
+            dr = Drone(point, i,0)
             self.drone_list.append(dr)
             surface_points.append(point)
         internal_points = []
@@ -148,7 +152,7 @@ class Ball:
             y = self.center[1] + height * np.sin(phi) * np.sin(theta)
             z = self.center[2] + height * np.cos(phi)
             point = np.array([x, y, z])
-            de = Drone(point, r+int(self.number_drones*0.5))
+            de = Drone(point, r+int(self.number_drones*0.5), 0)
             self.drone_list.append(de)
             internal_points.append(point)
 
@@ -168,7 +172,7 @@ class Front:
         initial_positions = []
         for i in range(self.number_drones):
             position = np.array(self.center) + np.array(self.direction) * i * self.spacing
-            drone = Drone(position, i,)  # Create a Drone instance with position and index
+            drone = Drone(position, i,0)  # Create a Drone instance with position, index and value_objective
             self.drone_list.append(drone)  # Add the drone to the list of drones
             initial_positions.append(drone.pos)  # Append index and position tuple
             print(initial_positions)

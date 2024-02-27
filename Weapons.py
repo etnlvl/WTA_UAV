@@ -1,7 +1,24 @@
+import Drone
+
+
+
 class Weapons:
-    pass
+    def __init__(self, reward_value, state_dependency) :
+        self.reward_value = reward_value
+        self.state_dependency = state_dependency       ### state_dependency = [Boolean, Boolean] =[succesfully_allocated, succesfully_destroyed_drones]
+
+
+
+
+    def update_drone_status (self, weapon) :
+        return Drone.drone_get_destroyed(self, weapon)
 
 class Laser(Weapons):
+    def __init__(self, reward_value, state_dependency):
+        super().__init__(reward_value, state_dependency)
+        self.state_dependency = state_dependency
+        self.reward_value = reward_value
+
     Pc = 0.5  # probability of hit
     ammunition = 150  # ammunition remaining
     rc = 200  # maximum range
@@ -10,9 +27,12 @@ class Laser(Weapons):
     reach_time = 0.002  # time for the beam to destroy the target
     name = "Laser"
 
-    def __init__(self ):
-        pass
+
 class Gun(Weapons):
+    def __init__(self, reward_value, state_dependency):
+        super().__init__(reward_value, state_dependency)
+        self.state_dependency = state_dependency
+        self.reward_value = reward_value
     Pc = 0.7
     ammunition = 60
     rc = 200
@@ -21,33 +41,34 @@ class Gun(Weapons):
     reach_time = 0.5
     name = "Gun"
 
-    def __init__(self):
-        pass
-
 
 class Net(Weapons):
+    def __init__(self, reward_value, state_dependency):
+        super().__init__(reward_value, state_dependency)
+        self.state_dependency = state_dependency
+        self.reward_value = reward_value
     Pc = 0.85
     ammunition = 10
     rc = 100
     downtime = None  # seconds
     name = "Net"
 
-    def __init__(self):
-        pass
-
 class Jammer(Weapons):
+    def __init__(self, reward_value, state_dependency):
+        super().__init__(reward_value, state_dependency)
+        self.state_dependency = state_dependency
+        self.reward_value = reward_value
     Pc = 1
     ammunition = 80
     rc = 60
     name = "Jammer"
-
-    def __init__(self):
-        pass
 class Grenade(Weapons):
+    def __init__(self, reward_value, state_dependency):
+        super().__init__(reward_value, state_dependency)
+        self.state_dependency = state_dependency
+        self.reward_value = reward_value
     Pc = 0.85
     ammunition = 80
     rc = 60
     name = "Grenade "
-
-    def __init__(self):
-        pass
+    downtime = 1.5
