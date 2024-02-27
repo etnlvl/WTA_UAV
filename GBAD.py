@@ -3,13 +3,13 @@ import heapq as hp
 import matplotlib.pyplot as plt
 import Drone
 import Weapons
-class GBAD:
+class GBAD:   # GBAD stands for Ground Base Air Defense
     def __init__(self, position, drone_list, weapons_list):
         self.position = position
         self.drone_list = drone_list
         self.closest_drones = []
         self.weapons = weapons_list
-        self.nw = len(weapons_list)
+        self.nw = len(weapons_list)  # Number of weapons 
 
     def get_closest_drones(self, n):
         a = [np.linalg.norm(self.position - d.pos) for d in self.drone_list]

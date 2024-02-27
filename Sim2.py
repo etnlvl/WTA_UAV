@@ -19,7 +19,7 @@ class Sim2:
         self.count_alive = []
         self.the_time_steps = []
 
-    def next(self):
+    def next(self):                                                    ## This function proceed to the global simulation 
         w_prob = [w.Pc for w in self.base.weapons]
         # Create cost/probability matrix
         for t in range (0,self.st, self.time_step) :                        ## for the all simulation time, from t=0s to ts = time_simulation increased by t = time_step ##
