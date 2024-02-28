@@ -5,7 +5,6 @@ import GBAD
 import Weapons
 import numpy as np
 from math import *
-from Jonk_Volg import Jonk_Volg
 
 class Sim_MDP:
 
