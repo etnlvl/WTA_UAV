@@ -46,8 +46,8 @@ class Sim_MDP:
             ## Checking if the drone has been effectively destroyed and updating the status (through the function drone_get_destroyed)  ##
             for i in self.assignment.assignement:
                 if self.base.drone_list[i[1]].drone_get_destroyed(self.base.weapons[i[0]]) :
-                    w.state_dependency[1] = True
-                    w.reward_value += 1
+                    self.base.weapons[i[0]].state_dependency[1] = True
+                    self.base.weapons[i[0]].reward_value += 1
 
             for k,l in enumerate(self.base.weapons) :       # update the cost matrix regarding the reward value precedently allocated #
                 cost[k] = [l.reward_value * element for element in cost[k]]
@@ -75,10 +75,10 @@ class Sim_MDP:
 n = 4  # number of weapons #
 
 ### Get the weapons for the fisrt base ###
-Gun1 = Weapons.Gun(0,np.array([False, False]))
-Gun2 = Weapons.Gun(0,np.array([False, False]))
-grenade1 = Weapons.Grenade(0, np.array([False, False]))
-Laser1 = Weapons.Laser(0, np.array([False, False]))
+Gun1 = Weapons.Gun('Gun1',0,np.array([False, False]))
+Gun2 = Weapons.Gun('Gun2',0,np.array([False, False]))
+grenade1 = Weapons.Grenade('Grenade1', 0, np.array([False, False]))
+Laser1 = Weapons.Laser('Laser1',0, np.array([False, False]))
 
 
 initial_swarm = Drones.Ball(9, 5, np.array([5, 5, 4]), 0.58)
