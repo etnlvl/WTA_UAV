@@ -13,6 +13,8 @@ class GBAD:
 
     def get_distance_drone(self) :
         a = [np.linalg.norm(self.position - d.pos) for d in self.drone_list]
+        for idx, d in enumerate(self.drone_list) :
+            d.drone_dist = a[idx]
         return a
 
     def get_closest_drones(self, n):

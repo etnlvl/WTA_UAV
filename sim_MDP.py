@@ -5,6 +5,7 @@ import GBAD
 import Weapons
 import numpy as np
 from math import *
+import pandas as pd
 
 class Sim_MDP:
 
@@ -22,14 +23,17 @@ class Sim_MDP:
 
     def next_MDP(self):
         w_prob = [w.Pc for w in self.base.weapons]
-        # Create cost/probability matrix
-        cost = np.reshape(np.repeat(w_prob, self.n), (self.base.nw, self.n))
+        print(self.drone_list[3])
         for t in np.arange (0,self.st, self.time_step) :                        ## for the all simulation time, from t=0s to ts = time_simulation increased by t = time_step ##
             print(f'Downtime Timer = {self.downtime_timer}')
             dist = self.base.get_distance_drone()
+            print(dist)
+            cost = np.reshape(np.repeat(w_prob, self.n), (self.base.nw, self.n))
             for index, w in enumerate(self.base.weapons):
-                cost[index] = cost[index] * [d < w.rc for d in dist]
+                cost[index] = cost[index] * [w.range_window[0] <= d <= w.range_window[1] for d in dist]
                 cost[index] = cost[index] * np.repeat([w.ammunition > 0], self.n)
+                cost[index] = [w.reward_value * element for element in cost[index]]
+
                 if np.mod(self.downtime_timer, w.downtime) != 0 :    # means that weapon is not  available
                     # print(f' {w.name} is not available')
                     cost[index] = [0]*self.n
@@ -43,16 +47,24 @@ class Sim_MDP:
             for id, w in enumerate(self.base.weapons) :
                 if id in indexes_alloc_weapons :
                     w.state_dependency[0] = True
+                    self.drone_list[id].drone_allocated.append(w.name)
+
             ## Checking if the drone has been effectively destroyed and updating the status (through the function drone_get_destroyed)  ##
             for i in self.assignment.assignement:
                 if self.base.drone_list[i[1]].drone_get_destroyed(self.base.weapons[i[0]]) :
                     self.base.weapons[i[0]].state_dependency[1] = True
                     self.base.weapons[i[0]].reward_value += 1
+                else :
+                    self.base.weapons[i[0]].reward_value += -1       ### give to weapon a negative reward if the drone is miss ###
+                    print(f'{self.base.weapons[i[0]].name} receive a negative reward' )
+            for drone in self.base.drone_list:                             ### give a heavier negative reward if one drone escapes from one weapon window_range ###
+                for weapons in self.base.weapons :
+                    if drone.drone_escape(weapons) and drone.active == 1 :
+                        weapons.reward_value += -3
+                        print(f'{weapons.name} receive a HEAVY negative reward'  )
 
-            for k,l in enumerate(self.base.weapons) :       # update the cost matrix regarding the reward value precedently allocated #
-                cost[k] = [l.reward_value * element for element in cost[k]]
             for agent in self.base.weapons :
-                print(f'the reward value of {agent.name} is R={agent.reward_value}')
+                print(f'REWARD VALUE OF {agent.name}={agent.reward_value}')
             for k in self.drone_list:                  ###UPDATE THE DRONE'S POSITION IF STILL ALIVE
                 if k.active == 1:
                     k.update_drone_pos(self.time_step)
@@ -63,11 +75,6 @@ class Sim_MDP:
                     counter_active += 1
             self.count_alive.append(counter_active)
             self.the_time_steps.append(t+1)
-        s=0
-        for a in self.drone_list :
-            if a.active == 1 :
-                s += 1
-        print(f'There is still {s} UAV alive in the swarm')
         return self.the_time_steps, self.count_alive
 
 
@@ -75,14 +82,21 @@ class Sim_MDP:
 n = 4  # number of weapons #
 
 ### Get the weapons for the fisrt base ###
-Gun1 = Weapons.Gun('Gun1',0,np.array([False, False]))
-Gun2 = Weapons.Gun('Gun2',0,np.array([False, False]))
-grenade1 = Weapons.Grenade('Grenade1', 0, np.array([False, False]))
-Laser1 = Weapons.Laser('Laser1',0, np.array([False, False]))
+Gun1 = Weapons.Gun('Gun1',50,np.array([False, False]))
+Gun2 = Weapons.Gun('Gun2',50,np.array([False, False]))
+grenade1 = Weapons.Grenade('Grenade1', 50, np.array([False, False]))
+Laser1 = Weapons.Laser('Laser1',50, np.array([False, False]))
+Laser2 = Weapons.Laser('Laser2',50, np.array([False, False]))
 
 
-initial_swarm = Drones.Ball(9, 5, np.array([5, 5, 4]), 0.58)
+
+
+initial_swarm = Drones.Ball(25, 5, np.array([50,30, 40]), 0.58)
 base = GBAD.GBAD(np.array([0, 0, 0]), initial_swarm.drone_list, [Gun1, Gun2, grenade1,
                                                                      Laser1])
 simulation = Sim_MDP(5, 1, base)
-simulation.next_MDP()
+final_nb_drones_alive = simulation.next_MDP()[1][-1]
+print(f'The final number of UAVs alive is : {final_nb_drones_alive}')
+
+total_number_of_drones_alive = []
+total_number_of_drones_alive.append(final_nb_drones_alive)

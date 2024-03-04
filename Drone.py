@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 import Weapons
 import numpy as np
 import Weapons
+import GBAD as GBAD
 
-class Drone:
-    def __init__(self, pos, idx, value_obj, close_drone=None):
+class Drone :
+    def __init__(self, pos, idx, close_drone=None):
         self.active = 1   # says if the drone is still in state of function
         self.close_drone = close_drone
         self.pos = pos
@@ -13,8 +14,9 @@ class Drone:
         self.threat_val = 1     #~ the threat value will increase as the
                                         #distance to the base decrease.
         self.path = []
-        self.speed = np.array([-1,-1,-0.5])    # ~100km/h
-        self.value_obj = value_obj
+        self.speed = np.array([-3,-1,-2])    # ~100km/h
+        self.drone_allocated = []
+        self.drone_dist = None
 
 
     def drone_get_destroyed(self,weapon):
@@ -29,14 +31,24 @@ class Drone:
             print(f'Drone {self.idx} has been missed by : {weapon.name}')
             return False
 
+    def drone_escape (self, weapon) :
+        if self.drone_dist < weapon.range_window[0]:
+            print('drone_escape')
+            self.pos = np.array([np.inf,np.inf,np.inf])
+        return self.drone_dist < weapon.range_window[0]
+
+
+
     def update_drone_pos(self, time):  #### Update the position of the drone
         self.pos += self.speed * time
+
+
 
 #### To get all the initial position of the swarm in the desired formation ####
 
 # To get a wave formation #
 class Wave :
-    def __init__(self,number_drones, head_position, angle, spacing ):
+    def __init__(self,number_drones, head_position, angle, spacing):
         self.head_position = head_position
         self.angle = angle
         self.spacing = spacing
@@ -50,7 +62,7 @@ class Wave :
         left_side, right_side = np.zeros((nbl, 3)), np.zeros((nbr, 3))
         for l in range(0, nbl):
             left_side[l][0], left_side[l][1], left_side[l][2] = self.head_position[0] - (l + 1) * x_dist, self.head_position[1] - (
-                        l + 1) * y_dist, self.head_position[2]
+                    l + 1) * y_dist, self.head_position[2]
             point1 = left_side[l]
             drl = Drone(point1, l, 0)
             self.drone_list.append(drl)
@@ -65,68 +77,68 @@ class Wave :
 
         return pos
 
-    # To get a double wave formation #
-    def get_init_double_wave(self):
+        # To get a double wave formation #
+def get_init_double_wave(self):
 
-        nbr = (self.number_drones - 1) // 2
-        nbl = (self.number_drones - 1) - nbr
-        x_dist, y_dist = self.spacing * abs(np.sin(self.angle / 2)), self.spacing * abs(np.cos(self.angle / 2))
-        left_side1, right_side1 = np.zeros((nbl, 3)), np.zeros((nbr, 3))
-        ###############################1ST WAVE#############################3###
-        for l in range(0, nbl):
-            left_side1[l][0], left_side1[l][1], left_side1[l][2] = self.head_position[0] - (l + 1) * x_dist, \
-                                                                self.head_position[1] - (
-                                                                        l + 1) * y_dist, self.head_position[2]
-            point1 = left_side1[l]
-            drl = Drone(point1, l, 0)
-            self.drone_list.append(drl)
-        self.drone_list.append(self.head_position)
-        for r in range(0, nbr):
-            right_side1[r][0], right_side1[r][1], right_side1[r][2] = self.head_position[0] + (r + 1) * x_dist, \
-                                                                   self.head_position[1] - (
-                                                                           r + 1) * y_dist, self.head_position[2]
-            point2 = right_side1[r]
-            drr = Drone(point2, r + nbl, 0)
-            self.drone_list.append(drr)
-        pos1 = np.vstack((np.vstack((np.array(self.head_position), left_side1)), right_side1))
+    nbr = (self.number_drones - 1) // 2
+    nbl = (self.number_drones - 1) - nbr
+    x_dist, y_dist = self.spacing * abs(np.sin(self.angle / 2)), self.spacing * abs(np.cos(self.angle / 2))
+    left_side1, right_side1 = np.zeros((nbl, 3)), np.zeros((nbr, 3))
+    ###############################1ST WAVE#############################3###
+    for l in range(0, nbl):
+        left_side1[l][0], left_side1[l][1], left_side1[l][2] = self.head_position[0] - (l + 1) * x_dist, \
+                                                            self.head_position[1] - (
+                                                                    l + 1) * y_dist, self.head_position[2]
+        point1 = left_side1[l]
+        drl = Drone(point1, l, 0)
+        self.drone_list.append(drl)
+    self.drone_list.append(self.head_position)
+    for r in range(0, nbr):
+        right_side1[r][0], right_side1[r][1], right_side1[r][2] = self.head_position[0] + (r + 1) * x_dist, \
+                                                               self.head_position[1] - (
+                                                                       r + 1) * y_dist, self.head_position[2]
+        point2 = right_side1[r]
+        drr = Drone(point2, r + nbl, 0)
+        self.drone_list.append(drr)
+    pos1 = np.vstack((np.vstack((np.array(self.head_position), left_side1)), right_side1))
 
-        left_side2, right_side2 = np.zeros((nbl, 3)), np.zeros((nbr, 3))
-        spacing_waves = self.spacing / 3
-        new_head_pos = [self.head_position[0], self.head_position[1] - spacing_waves, self.head_position[2]]
+    left_side2, right_side2 = np.zeros((nbl, 3)), np.zeros((nbr, 3))
+    spacing_waves = self.spacing / 3
+    new_head_pos = [self.head_position[0], self.head_position[1] - spacing_waves, self.head_position[2]]
 
-        ####################2nd WAVE###########################################
-        for l in range(0, nbl):
-            left_side2[l][0], left_side2[l][1], left_side2[l][2] = new_head_pos[0] - (l + 1) * x_dist, \
-                                                                new_head_pos[1] - (
-                                                                        l + 1) * y_dist, new_head_pos[2]
-            point1 = left_side2[l]
-            drl = Drone(point1, l,0 )
-            self.drone_list.append(drl)
-        self.drone_list.append(new_head_pos)
-        for r in range(0, nbr):
-            right_side2[r][0], right_side2[r][1], right_side2[r][2] = new_head_pos[0] + (r + 1) * x_dist, \
-                                                                   new_head_pos[1] - (
-                                                                           r + 1) * y_dist, new_head_pos[2]
-            point2 = right_side2[r]
-            drr = Drone(point2, r + nbl, 0)
-            self.drone_list.append(drr)
-        pos2 = np.vstack((np.vstack((np.array(new_head_pos), left_side2)), right_side2))
+    ####################2nd WAVE###########################################
+    for l in range(0, nbl):
+        left_side2[l][0], left_side2[l][1], left_side2[l][2] = new_head_pos[0] - (l + 1) * x_dist, \
+                                                            new_head_pos[1] - (
+                                                                    l + 1) * y_dist, new_head_pos[2]
+        point1 = left_side2[l]
+        drl = Drone(point1, l,0 )
+        self.drone_list.append(drl)
+    self.drone_list.append(new_head_pos)
+    for r in range(0, nbr):
+        right_side2[r][0], right_side2[r][1], right_side2[r][2] = new_head_pos[0] + (r + 1) * x_dist, \
+                                                               new_head_pos[1] - (
+                                                                       r + 1) * y_dist, new_head_pos[2]
+        point2 = right_side2[r]
+        drr = Drone(point2, r + nbl, 0)
+        self.drone_list.append(drr)
+    pos2 = np.vstack((np.vstack((np.array(new_head_pos), left_side2)), right_side2))
 
-        final_pos = np.vstack((pos1, pos2))
-        return final_pos
+    final_pos = np.vstack((pos1, pos2))
+    return final_pos
 
 
 
 # To get a ball formation #
-class Ball:
+class Ball :
 
     def __init__(self,number_drones, diameter, center, spacing):
-            self.diameter = diameter
-            self.center = center
-            self.spacing = spacing
-            self.number_drones = number_drones
-            self.drone_list = []
-            self.get_ini_pos_ball()
+        self.diameter = diameter
+        self.center = center
+        self.spacing = spacing
+        self.number_drones = number_drones
+        self.drone_list = []
+        self.get_ini_pos_ball()
 
     def get_ini_pos_ball(self):
         surface_points = []
@@ -160,7 +172,7 @@ class Ball:
 
 
 # To get a front formation #
-class Front:
+class Front (Drone) :
     def __init__(self, number_drones, center, spacing, direction) :
         self.number_drones= number_drones
         self.center = center
