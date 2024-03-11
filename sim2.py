@@ -1,7 +1,7 @@
 import Drone as Drones
 from Linear_Assignment import Linear_Assignment
 from MIP_Assignment import MIP_Assignment
-import GBAD
+import gbad
 import Weapons
 import numpy as np
 import pandas as pd

@@ -1,7 +1,7 @@
 import Drone as Drones
 from Linear_Assignment import Linear_Assignment
 from MIP_Assignment import MIP_Assignment
-import GBAD
+import gbad
 import Weapons
 import numpy as np
 from math import *
@@ -34,7 +34,7 @@ class Stats :
             print(initial_swarm)
             base = GBAD.GBAD(np.array([0,0,0]), initial_swarm.drone_list, self.weapons_list)
             if self.resol_method == 'MDP' :
-                from sim_MDP import Sim_MDP
+                from Sim_reward import Sim_MDP
                 simu = Sim_MDP(self.st, self.time_step, base)
                 self.total_nb_alive.append(simu.next_MDP()[1][-1])
             else :

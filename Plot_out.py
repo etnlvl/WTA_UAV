@@ -1,6 +1,6 @@
 import Drone as Drones
 from MIP_Assignment import MIP_Assignment
-import GBAD
+import gbad
 import Weapons
 import numpy as np
 import matplotlib.pyplot as plt

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import Weapons
 import numpy as np
 import Weapons
-import GBAD as GBAD
+import gbad as GBAD
 
 class Drone :
     def __init__(self, pos, idx, close_drone=None):
@@ -17,6 +17,8 @@ class Drone :
         self.speed = np.array([-3,-1,-2])    # ~100km/h
         self.drone_allocated = []
         self.drone_dist = None
+        self.time = 1
+        self.targets_set = dict()
 
 
     def drone_get_destroyed(self,weapon):
@@ -39,8 +41,10 @@ class Drone :
 
 
 
-    def update_drone_pos(self, time):  #### Update the position of the drone
-        self.pos += self.speed * time
+    def update_drone_pos(self, drones):  #### Update the position of all the drones
+        for drone in drones :
+            drone.pos += self.speed * self.time
+
 
 
 
@@ -191,3 +195,6 @@ class Front (Drone) :
         return initial_positions
 
 
+swarm = Ball(25, 7, np.array([5,3,4]), 1)
+posit = swarm.get_ini_pos_ball()
+print(posit.drone_list )
