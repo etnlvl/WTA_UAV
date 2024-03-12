@@ -21,12 +21,17 @@ class Policy :
 
     def initialize_surv_prob (self, first_policy, prob) :
         self.surv_prob[:,0] = np.array(([1, 1, 1, 1]))
-        for t in range (1,self.n_assignments) :
-            for j in range (self.n_targets) :
-                if first_policy[f'{self.weapon_idx}'][t]== j :
-                    self.surv_prob[j][t] = self.surv_prob[j][t-1]*(1-prob[0])
-                else :
-                    self.surv_prob[j][t] = self.surv_prob[j][t - 1]
+        print('Surv Prob outer')
+        print(self.surv_prob)
+        for t in range (0,self.n_assignments) :
+            self.surv_prob[:,t+1] = self.surv_prob[:,t]
+            self.surv_prob[first_policy[f'{self.weapon_idx}'][t]-1][t+1] = self.surv_prob[first_policy[f'{self.weapon_idx}'][t]-1][t]*(1-prob[0])
+            # for j in range (self.n_targets) :
+            #     if first_policy[f'{self.weapon_idx}'][t]== (j-1) :
+            #         self.surv_prob[j][t] = self.surv_prob[j][t-1]*(1-prob[0])
+            #         print(self.surv_prob[j][t - 1] * (1 - prob[0]))
+            #     else :
+            #         self.surv_prob[j][t] = self.surv_prob[j][t - 1]
         return self.surv_prob
 
     def update_surv_prob(self, prob, policy) :
@@ -39,22 +44,20 @@ class Policy :
         return self.surv_prob
 
 
-
-
-
     def get_next_policy(self, prob_weapon , S) :
         next_policy = []
         policy_value = 1
         for j in range(self.n_targets) :
             for t in range (self.n_assignments) :
                 self.expected_value[j][t] = prob_weapon* S[j][t]
+        print('look at here')
         print(self.expected_value)
         for t in range(self.n_assignments) :
             a = np.argmax(self.expected_value[:,t])
             idx_to_pick_randomly = []        ### in  the case where there is several values at the same maximum expected_value, we pick randomly one of the corresponding indexes.
             for j in range (self.n_targets) :
                 if self.expected_value[j][t] == np.max(self.expected_value[:,t]) :
-                    idx_to_pick_randomly.append(j)
+                    idx_to_pick_randomly.append(j) # Fix this
             if a not in idx_to_pick_randomly :
                 idx_to_pick_randomly.append(a)
             next_policy.append(np.random.choice(idx_to_pick_randomly)+1)
