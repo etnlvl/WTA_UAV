@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import Weapons
 import numpy as np
 import Weapons
-import gbad as GBAD
+from gbad import GBAD
 
 class Drone :
     def __init__(self, pos, idx, close_drone=None):
@@ -21,8 +21,9 @@ class Drone :
         self.targets_set = dict()
 
 
-    def drone_get_destroyed(self,weapon):
-        if np.random.rand() < weapon.Pc :  #### It means that the drone has been hit so the active value of it is updated to 0.
+    def drone_get_destroyed(self, weapon):
+        if np.random.rand() < weapon.Pc:  #### It means that the drone has been hit so the active value of it is then updated to 0.
+            ## we make the assumption that if the drone is reached, it is destroyed
             self.active = 0
             self.pos = np.array([np.inf,np.inf,np.inf])
 
@@ -33,6 +34,15 @@ class Drone :
             print(f'Drone {self.idx} has been missed by : {weapon.name}')
             return False
 
+
+
+    def drone_get_remove(self, weapon):
+        if np.random.rand() < weapon.Pc:
+            return True
+        else :
+            return False
+
+
     def drone_escape (self, weapon) :
         if self.drone_dist < weapon.range_window[0]:
             print('drone_escape')
@@ -41,10 +51,8 @@ class Drone :
 
 
 
-    def update_drone_pos(self, drones):  #### Update the position of all the drones
-        for drone in drones :
-            drone.pos += self.speed * self.time
-
+    def update_drone_pos(self, time):  #### Update the position of the drone
+        self.pos += self.speed * time
 
 
 
@@ -195,6 +203,6 @@ class Front (Drone) :
         return initial_positions
 
 
-swarm = Ball(25, 7, np.array([5,3,4]), 1)
-posit = swarm.get_ini_pos_ball()
-print(posit.drone_list )
+# swarm = Ball(25, 7, np.array([5,3,4]), 1)
+# posit = swarm.get_ini_pos_ball()
+# print(posit.drone_list )

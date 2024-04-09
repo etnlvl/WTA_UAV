@@ -9,25 +9,20 @@ class Weapons:
         self.state_dependency = state_dependency       ### state_dependency = [Boolean, Boolean] =[succesfully_allocated, succesfully_destroyed_drones]
         self.engaged = False
 
-
-
-
-
-
-
-    def is_avalaible (self, time) :
-        return time >= self.last_fired_time + self.reload_time
+    # def is_avalaible (self, time) :
+    #     return time >= self.last_fired_time + self.reload_time
 
 
 class Gun(Weapons):
     def __init__(self,name, reward_value, state_dependency):
         super().__init__(reward_value, state_dependency)
         self.state_dependency = state_dependency
-        self.reward_value = np.array([[1],[-1],[-2]])
+        self.reward_value = reward_value
+        # self.reward_value = np.array([[1],[-1],[-2]])
         self.name = name
         self.miss_counter = 0
         self.engaged = False
-        self.Pc = 0.63521
+        self.Pc = 0.635
         self.transition_value = np.array([[1 - self.Pc],[self.Pc]])
         self.downtime = 0.5
     ammunition = 10000
@@ -40,11 +35,12 @@ class Laser(Weapons):
     def __init__(self, name, reward_value, state_dependency):
         super().__init__(reward_value, state_dependency)
         self.state_dependency = state_dependency
-        self.reward_value = np.array([[1],[-1],[-2]])
+        self.reward_value = reward_value
+        # self.reward_value = np.array([[1],[-1],[-2]])
         self.name = name
         self.miss_counter = 0
         self.engaged = False
-        self.Pc = 0.75
+        self.Pc = 0.80
         self.transition_value = np.array([[1 - self.Pc], [self.Pc]])
         self.downtime = 0.5
 
