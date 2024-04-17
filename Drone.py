@@ -5,7 +5,8 @@ import numpy as np
 import Weapons
 from gbad import GBAD
 
-class Drone :
+
+class Drone:
     def __init__(self, pos, idx, close_drone=None):
         self.active = 1   # says if the drone is still in state of function
         self.close_drone = close_drone
@@ -22,37 +23,67 @@ class Drone :
 
 
     def drone_get_destroyed(self, weapon):
-        if np.random.rand() < weapon.Pc:  #### It means that the drone has been hit so the active value of it is then updated to 0.
-            ## we make the assumption that if the drone is reached, it is destroyed
-            self.active = 0
-            self.pos = np.array([np.inf,np.inf,np.inf])
+        if weapon.ammunition > 0:
+            if np.random.rand() < weapon.Pc:  #### It means that the drone has been hit so the active value of it is then updated to 0.
+                ## we make the assumption that if the drone is reached, it is destroyed
+                self.active = 0
+                self.pos = np.array([np.inf, np.inf, np.inf])
+                weapon.ammunition += -1
 
-            print(f'Drone {self.idx} has been destroyed by : {weapon.name}')
-            return True
-        else:  #### The drone will not be hit at this time step, so we need to upgrade the threat value.
-            self.threat_val += 1
-            print(f'Drone {self.idx} has been missed by : {weapon.name}')
-            return False
+                print(f'Drone {self.idx} has been destroyed by : {weapon.name}')
+
+                return True
+            else:  #### The drone will not be hit at this time step, so we need to upgrade the threat value.
+                # self.threat_val += 1
+                print(f'Drone {self.idx} has been missed by : {weapon.name}')
+                return False
+        else :
+            print(f'{weapon.name} is out of ammunition')
+
+    def drone_get_check(self, weapon):
+        if weapon.ammunition > 0:
+            if np.random.rand() < weapon.Pc:  #### It means that the drone has been hit so the active value of it is then updated to 0.
+                ## we make the assumption that if the drone is reached, it is destroyed
+                return True
+            else:  #### The drone will not be hit at this time step, so we need to upgrade the threat value.
+                return False
+        else:
+            print(f'{weapon.name} is out of ammunition')
 
 
 
     def drone_get_remove(self, weapon):
         if np.random.rand() < weapon.Pc:
             return True
-        else :
+        else:
             return False
 
 
-    def drone_escape (self, weapon) :
+    def drone_escape(self, weapon):
         if self.drone_dist < weapon.range_window[0]:
             print('drone_escape')
-            self.pos = np.array([np.inf,np.inf,np.inf])
+            self.pos = np.array([np.inf, np.inf, np.inf])
         return self.drone_dist < weapon.range_window[0]
 
 
 
     def update_drone_pos(self, time):  #### Update the position of the drone
         self.pos += self.speed * time
+        # self.threat_val += 1
+
+    def update_TV(self):
+        pos_base = np.array([0, 0, 0])
+        distance_of_drone = np.linalg.norm(self.pos - pos_base)
+        threat_val = 1/distance_of_drone
+        self.threat_val = threat_val
+        return self.threat_val
+
+        #
+
+
+
+
+
 
 
 
@@ -202,7 +233,3 @@ class Front (Drone) :
             print(initial_positions)
         return initial_positions
 
-
-# swarm = Ball(25, 7, np.array([5,3,4]), 1)
-# posit = swarm.get_ini_pos_ball()
-# print(posit.drone_list )
