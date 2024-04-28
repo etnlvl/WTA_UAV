@@ -14,6 +14,7 @@ class GBAD:
         self.nw = len(weapons_list)
         self.n_drone = len(drone_list)
         self.alive_drones = []
+        self.health = 1
 
 
     def get_distance_drone(self):

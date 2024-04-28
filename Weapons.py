@@ -31,7 +31,7 @@ class Gun(Weapons):
     rc = 100
     destroy_time = 1
     reach_time = 0.5
-    range_window = [0, 100]
+    range_window = [45, 50]
 
 class Laser(Weapons):
     def __init__(self, name, reward_value, state_dependency, ammunition):
@@ -48,11 +48,11 @@ class Laser(Weapons):
         self.ammunition = ammunition
 
 
-    ammunition = 1000  # ammunition remaining
+
     rc = 45  # maximum range
     destroy_time = 15  # time for the weapon to destroy the target
     reach_time = 0.002  # time for the beam to destroy the target
-    range_window = [5,50]
+    range_window = [38,22]
 
 class Grenade(Weapons):
     def __init__(self, name, reward_value, state_dependency, ammunition):
@@ -67,9 +67,9 @@ class Grenade(Weapons):
         self.downtime = 0.5
         self.ammunition = ammunition
     Pc = 0.4256
-    ammunition = 1000
+
     rc = 35
-    range_window = [30, 60]
+    range_window = [25, 60]
 
 class Net(Weapons):
     def __init__(self, name, reward_value, state_dependency, ammunition):
@@ -83,7 +83,7 @@ class Net(Weapons):
         self.transition_value = np.array([[1 - self.Pc], [self.Pc]])
         self.downtime = 0.5
         self.ammunition = ammunition
-    ammunition = 1000
+
     rc = 100
 
     range_window = [30, 100]

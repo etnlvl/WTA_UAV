@@ -4,7 +4,7 @@ import gbad
 import Weapons
 import numpy as np
 import matplotlib.pyplot as plt
-import sim2
+import SimMIP
 
 class Plot_out :
 

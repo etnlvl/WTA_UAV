@@ -14,18 +14,24 @@ class Policy :
         self.first_weapon_ammun = None                                          ### the first weapon which has ammunition to build the policy
 
     def get_first_policy(self, highest_TV_drones):                              ### it is useless to calculate the value of the first policy
+        print(f'the weapon_set before the loop is {[weapon.name for weapon in self.weapon_set]}')
+        new_weapon_set =[]
         for weapon in self.weapon_set:
+            print(f'{weapon.name} has {weapon.ammunition} ammos')
             if weapon.ammunition > 0:
-                self.first_weapon_ammun = weapon
-                break
-        if self.first_weapon_ammun == None :
+                new_weapon_set.append(weapon)
+        self.weapon_set = new_weapon_set
+        print(f'the weapon_set after the loop is {[weapon.name for weapon in self.weapon_set]}')
+        if len(self.weapon_set) == 0:
             print('All the weapons are out of ammunitions')
             return None
-        self.weapon_policy[self.first_weapon_ammun.name] = [0] * self.n_assignments
+        self.weapon_policy[self.weapon_set[0].name] = [0] * self.n_assignments
+        print(f' The first weapon for the first policy is {self.weapon_set[0].name} and has {self.weapon_set[0].ammunition} ammo ')
         for t in range(self.n_assignments):
-            self.weapon_policy[self.first_weapon_ammun.name][t] = highest_TV_drones[t]
-        # print(f'test : {[indice.idx for indice in self.weapon_policy[self.first_weapon_ammun.name]]}')
-        # print(f'the policy for the first weapon is : {}')
+            self.weapon_policy[self.weapon_set[0].name][t] = highest_TV_drones[t]
+            print(highest_TV_drones[t].idx)
+
+
         return self.weapon_policy
 
 
@@ -36,7 +42,7 @@ class Policy :
             self.surv_prob[:, 0] = np.array(([1]*self.n_targets))
             for t in range(0, self.n_assignments):
                 self.surv_prob[:, t+1] = self.surv_prob[:, t]
-                self.surv_prob[first_policy[self.first_weapon_ammun.name][t].idx][t+1] = self.surv_prob[first_policy[self.first_weapon_ammun.name][t].idx-1][t]*(1-prob[0])
+                self.surv_prob[first_policy[self.weapon_set[0].name][t].idx][t+1] = self.surv_prob[first_policy[self.weapon_set[0].name][t].idx-1][t]*(1-prob[0])
             self.surv_prob = np.delete(self.surv_prob, 0, axis=1)
         return self.surv_prob
 
@@ -57,7 +63,7 @@ class Policy :
 
     def find_drone_tv(self, threat_value, list):
         for drone in list :
-            if getattr(drone , 'threat_val') == threat_value :
+            if getattr(drone , 'threat_val') == threat_value:
                 return drone
 
     def convert_idx_to_object(self, drone_list, index_policy):
@@ -90,13 +96,14 @@ class Policy :
         return next_policy
 
     def get_all_policies(self, alive_drone_list, drone_list):
-        for weapon in self.weapon_set[1:]:
-            if weapon.ammunition > 0:
-
+        for weapon in self.weapon_set:
+            if weapon.ammunition > 0 and (weapon.name not in self.weapon_policy.keys()):
+                # print(f'OVERWRITTING {self.weapon_policy.keys()}')
+                # print(f' ammo of weapon {weapon.ammunition}')
                 self.weapon_policy[weapon.name] = self.convert_idx_to_object(drone_list, self.get_next_policy(weapon.Pc, self.surv_prob, alive_drone_list))
+
                 self.update_surv_prob(weapon.Pc, self.weapon_policy[weapon.name])
-            else:
-                print(f'{weapon.name} has no more ammo')
+
 
         return self.weapon_policy
 

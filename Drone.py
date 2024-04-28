@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import Weapons
 import numpy as np
+from math import *
 import Weapons
 from gbad import GBAD
 
@@ -14,31 +15,36 @@ class Drone:
         self.idx = idx
         self.threat_val = 1     #~ the threat value will increase as the
                                         #distance to the base decrease.
-        self.path = []
         self.speed = np.array([-3,-1,-2])    # ~100km/h
-        self.drone_allocated = []
-        self.drone_dist = None
-        self.time = 1
-        self.targets_set = dict()
+        self.drone_dist = 0.60
+        self.damage = 0.80 #0.2
+        self.target_survivability = 0.70
+        self.engagement_zone = 0.60
 
 
-    def drone_get_destroyed(self, weapon):
+
+    def drone_get_destroyed(self, drone, weapon, base, simu):
         if weapon.ammunition > 0:
             if np.random.rand() < weapon.Pc:  #### It means that the drone has been hit so the active value of it is then updated to 0.
                 ## we make the assumption that if the drone is reached, it is destroyed
-                self.active = 0
-                self.pos = np.array([np.inf, np.inf, np.inf])
-                weapon.ammunition += -1
+                print(f'Drone {drone.idx} has been destroyed by : {weapon.name}')
 
-                print(f'Drone {self.idx} has been destroyed by : {weapon.name}')
 
+                if drone.active == 1:
+                    simu.counter_drones_destroyed += 1
+                    simu.score += drone.threat_val
+                drone.active = 0
+                # base.drone_list.remove(drone)
                 return True
             else:  #### The drone will not be hit at this time step, so we need to upgrade the threat value.
-                # self.threat_val += 1
-                print(f'Drone {self.idx} has been missed by : {weapon.name}')
+
+                drone.target_survivability += 0.045
+                drone.engagement_zone += 0.02
+                print(f'Drone {drone.idx} has been missed by : {weapon.name}')
                 return False
         else :
             print(f'{weapon.name} is out of ammunition')
+        weapon.ammunition += -1
 
     def drone_get_check(self, weapon):
         if weapon.ammunition > 0:
@@ -59,16 +65,20 @@ class Drone:
             return False
 
 
-    def drone_escape(self, weapon):
-        if self.drone_dist < weapon.range_window[0]:
-            print('drone_escape')
-            self.pos = np.array([np.inf, np.inf, np.inf])
-        return self.drone_dist < weapon.range_window[0]
+    def drone_escape(self, weapon, base):
+        if np.linalg.norm(self.pos - np.array([0, 0, 0])) < weapon.range_window[0]:
+            answer = True
+            print(f'drone_escape range of {weapon.name} ')
+            base.health -= 0.01 # self.damage
+        else :
+            answer = False
+        return answer
 
 
 
     def update_drone_pos(self, time):  #### Update the position of the drone
         self.pos += self.speed * time
+        self.drone_dist += 0.01
         # self.threat_val += 1
 
     def update_TV(self):
@@ -77,6 +87,8 @@ class Drone:
         threat_val = 1/distance_of_drone
         self.threat_val = threat_val
         return self.threat_val
+
+
 
         #
 
@@ -194,10 +206,11 @@ class Ball :
             z = np.sin(theta) * radius_at_height
             point = self.center + np.array([x, y * self.diameter/2, z])
             dr = Drone(point, i,0)
+            # dr.survivability =
             self.drone_list.append(dr)
             surface_points.append(point)
         internal_points = []
-        num_internal_per_layer = int(self.diameter/2 / self.spacing)
+        num_internal_per_layer = ceil(self.diameter/2 / self.spacing)
         for r in range(int(self.number_drones*0.5)):            # creating the points inside the ball
             layer = r % num_internal_per_layer
             height = layer * self.spacing + self.spacing / 2
@@ -215,9 +228,9 @@ class Ball :
 
 
 # To get a front formation #
-class Front (Drone) :
-    def __init__(self, number_drones, center, spacing, direction) :
-        self.number_drones= number_drones
+class Front (Drone):
+    def __init__(self, number_drones, center, spacing, direction):
+        self.number_drones = number_drones
         self.center = center
         self.spacing = spacing
         self.direction = direction
@@ -232,4 +245,23 @@ class Front (Drone) :
             initial_positions.append(drone.pos)  # Append index and position tuple
             print(initial_positions)
         return initial_positions
+
+
+class Random (Drone):
+    def __init__(self, number_drones):
+        self.number_drones = number_drones
+        self.drone_list = []
+        self.get_ini_pos_random()
+
+    def get_ini_pos_random(self):
+        positions = np.random.randint(35, 55, size=(self.number_drones, 3))
+        for k in range(20):
+            drone = Drone(positions[k], k, 0)
+            self.drone_list.append(drone)
+        for d in range(20, 30):
+            dangerous_drone = Drone(positions[d], d, 0)
+            dangerous_drone.damage = 1
+            self.drone_list.append(dangerous_drone)
+
+
 

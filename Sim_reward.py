@@ -28,8 +28,13 @@ class Sim_Reward:
             dist = self.base.get_distance_drone()                                                                       ## Gets the distance of all drone to the base instead of getting only the closest ones
             cost = np.reshape(np.repeat(w_prob, self.n), (self.base.nw, self.n))
             for index, w in enumerate(self.base.weapons):
+                print(f'The enumerate function is going through {self.base.weapons}')
+                print(w.reward_value)
                 cost[index] = cost[index] * [w.range_window[0] <= d <= w.range_window[1] for d in dist]
                 cost[index] = cost[index] * np.repeat([w.ammunition > 0], self.n)
+                print(f'cost matrix is actually like this {cost}')
+                print(f'The element we try to set is like this {cost[index]}')
+                print(f'The reward value of this the weapon is {w.reward_value}')
                 cost[index] = [w.reward_value * element for element in cost[index]]
 
                 if np.mod(self.downtime_timer, w.downtime) != 0:                                                        ## Means that weapon is not  available
@@ -69,6 +74,7 @@ class Sim_Reward:
                     counter_active += 1
             self.count_alive.append(counter_active)
             self.the_time_steps.append(t+1)
+
         return self.the_time_steps, self.count_alive
 
 ###### Import the parameters for the global simulation #####
@@ -84,13 +90,14 @@ Laser2 = Weapons.Laser('Laser2',50, np.array([False, False]))
 
 ### Get the initial swarm and initialize the base ###
 initial_swarm = Drones.Ball(30, 5, np.array([50,30, 40]), 0.58)
-base = GBAD(np.array([0, 0, 0]), initial_swarm.drone_list, [Gun1, Gun2, Laser1,
-                                                                     Laser2])
+base = GBAD(np.array([0, 0, 0]), initial_swarm.drone_list, [Gun1, Gun2, grenade1,
+                                                                     Laser1])
 
 ### Run the Simulation ###
 
 simulation = Sim_Reward(20, 1, base)
-final_nb_drones_alive = simulation.next_reward()[1][-1]
+final_nb_drones_alive = simulation.next_reward()[1]
 print(f'The final number of UAVs alive is : {final_nb_drones_alive}')
+
 
 
