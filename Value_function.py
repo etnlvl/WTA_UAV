@@ -35,6 +35,15 @@ class Feed_MIP :
                                                                                                    self.dynamic_weights[3] * Dr + self.dynamic_weights[4]*Dir)
         return self.V_function_v2
 
+    def get_value_function_v3(self, target) :
+        Sr = target.target_survivability
+        Gr = self.base.health
+        Er = target.engagement_zone
+        Dr = target.damage
+        Dir = target.drone_dist
+        self.V_function_v1 = self.static_weights[2] * Er *(self.static_weights[0] * Sr + self.static_weights[1] * Gr +
+                              self.static_weights[3] * Dr + self.static_weights[4] * Dir)
+        return self.V_function_v1
 
 
 

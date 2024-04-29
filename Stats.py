@@ -1,6 +1,7 @@
 from Drone import Random
 from Sim_dynamic import Sim_dynamic
 from Sim_dynamic_v2 import Sim_dynamic_v2
+from Sim_dynamic_v3 import Sim_dynamic_v3
 from MIP_for_comparaison import Sim2
 from MIP_Assignment import MIP_Assignment
 import matplotlib.pyplot as plt
@@ -23,17 +24,21 @@ class Stats :
         self.alive_along_simulation_MIP = []   ### [[30,27,26,23,20,20,16,,15,13,10,9,7,6,4,2,1],[30,27,26,23,20,20,16,,15,13,10,9,7,6,4,2,1]] example for 2 simulations
         self.alive_along_simulation_Dynamic = []
         self.alive_along_simulation_Dynamic_v2 = []
+        self.alive_along_simulation_Dynamic_v3 = []
         self.scores_for_simulations_MIP = []
         self.score_for_simulation_Dynamic = []
         self.score_for_simulation_Dynamic_v2 = []
+        self.score_for_simulation_Dynamic_v3 = []
         self.GBAD_health_MIP = []
         self.GBAD_health_Dynamic = []
         self.GBAD_health_Dynamic_v2 = []
+        self.GBAD_health_Dynamic_v3 = []
         self.time_to_kill_everybody_MIP = []
         self.time_to_kill_everybody_Dynamic = []
         self.damage_MIP = []
         self.damage_Dynamic = []
         self.damage_Dynamic_v2 = []
+        self.damage_Dynamic_v3 = []
         self.weigth_wanted_dynamic = weigth_wanted_dynamic
         self.the_time_steps = []
 
@@ -98,18 +103,36 @@ class Stats :
             self.score_for_simulation_Dynamic_v2.append(simu_Dynamic_v2.score)
             self.GBAD_health_Dynamic_v2.append(simu_Dynamic_v2.GBAD_health_state)
             self.damage_Dynamic_v2.append(simu_Dynamic_v2.theo_damage)
+            ####************************************#######
+            ####************************************#######
+            ####   ELEMENTS FOR THE DYNAMIC V3      #######
+            Gun1_dynamic_v3 = Weapons.Gun('Gun1', 50, np.array([False, False]), 10)
+            Gun2_dynamic_v3 = Weapons.Gun('Gun2', 50, np.array([False, False]), 10)
+            grenade1_dynamic_v3 = Weapons.Grenade('Grenade1', 50, np.array([False, False]), 7)
+            Laser1_dynamic_v3 = Weapons.Laser('Laser1', 50, np.array([False, False]), 12)
+            Laser2_dynamic_v3 = Weapons.Laser('Laser2', 50, np.array([False, False]), 6)
+            weapons_list2_v3 = [Gun1_dynamic_v3, Gun2_dynamic_v3, grenade1_dynamic_v3, Laser1_dynamic_v3]
+            random_swarm2_v3 = Random(self.number_of_drones)
+            base4 = GBAD(np.array([0, 0, 0]), random_swarm2_v3.drone_list, weapons_list2_v3)
+            ### Proceeding all the Dynamic simulations
+            simu_Dynamic_v3 = Sim_dynamic_v3(self.st, self.time_step, base4, self.weigth_wanted_dynamic)
+            number_of_drones_destroyed_Dynamic = simu_Dynamic_v3.simu_dynamic_v3()[0]
+            self.alive_along_simulation_Dynamic_v3.append(simu_Dynamic_v3.targets_alive_ts)
+            self.score_for_simulation_Dynamic_v3.append(simu_Dynamic_v3.score)
+            self.GBAD_health_Dynamic_v3.append(simu_Dynamic_v3.GBAD_health_state)
+            self.damage_Dynamic_v3.append(simu_Dynamic_v3.theo_damage)
 
 
         return self.alive_along_simulation_MIP, self.alive_along_simulation_Dynamic
 
 
-stats1 = Stats(30,20, 1, {'Gun': [2, 50], 'Grenade': [1, 30], 'Laser': [1, 25]}, 10, [4, 2, 0.5, 0.5, 1])
+stats1 = Stats(30,20, 1, {'Gun': [2, 50], 'Grenade': [1, 30], 'Laser': [1, 25]}, 10, [4, 2, 1, 1e5, 0.5])
 time_for_simulation = np.arange(stats1.st)
 time_for_plotting = stats1.statistic()
-def average_results(results_MIP) :
-    new_lists = [[] for _ in range(len(results_nbd_MIP[0]))]
+def average_results(results_MIP):
+    new_lists = [[] for _ in range(len(results_MIP[0]))]
     # Parcourir chaque sous-liste et ajouter les éléments aux nouvelles listes
-    for sublist in results_nbd_MIP:
+    for sublist in results_MIP:
         for i, elem in enumerate(sublist):
             new_lists[i].append(elem)
     avg_list = []
@@ -117,51 +140,79 @@ def average_results(results_MIP) :
     for lst in new_lists:
         avg_list.append(statistics.mean(lst))
     return avg_list
-#### Getting the results for the NUMBER OF DRONES DESTROYED
+
+
+#### Getting the results for the NUMBER OF DRONES DESTROYED ####
 results_nbd_MIP = stats1.alive_along_simulation_MIP
 results_nbd_Dynamic = stats1.alive_along_simulation_Dynamic
 results_nbd_Dynamic_v2 = stats1.alive_along_simulation_Dynamic_v2
+results_nbd_Dynamic_v3 = stats1.alive_along_simulation_Dynamic_v3
 
-#### Get the average number of drones destroyed for both results MIP and Dynamic
-### For the MIP results
+#### Get the average number of drones destroyed for both results MIP and Dynamic ####
 avg_nbd_destroyed_MIP = average_results(results_nbd_MIP)
 avg_nbd_destroyed_Dynamic_v1 = average_results(results_nbd_Dynamic)
 avg_nbd_destroyed_Dynamic_v2 = average_results(results_nbd_Dynamic_v2)
+avg_nbd_destroyed_Dynamic_v3 = average_results(results_nbd_Dynamic_v3)
 
-### Getting the results for the SCORE
+### Getting the results for the SCORE ###
 results_score_MIP = stats1.scores_for_simulations_MIP
 results_score_Dynamic = stats1.score_for_simulation_Dynamic
 results_score_Dynamic_v2 = stats1.score_for_simulation_Dynamic_v2
+results_score_Dynamic_v3 = stats1.score_for_simulation_Dynamic_v3
 
-### Getting the results for the GBAD DAMAGE
+### Getting the results for the GBAD HEALTH ###
 results_GBAD_health_MIP = stats1.GBAD_health_MIP
 results_GBAD_health_Dynamic = stats1.GBAD_health_Dynamic
 results_GBAD_health_Dynamic_v2 = stats1.GBAD_health_Dynamic_v2
+results_GBAD_health_Dynamic_v3 = stats1.GBAD_health_Dynamic_v3
+### Getting the average for GBAD health.
+avg_GBAD_health_MIP = average_results(results_GBAD_health_MIP)
+avg_GBAD_health_Dynamic_v1 = average_results(results_GBAD_health_Dynamic)
+avg_GBAD_health_Dynamic_v2 = average_results(results_GBAD_health_Dynamic_v2)
+avg_GBAD_health_Dynamic_v3 = average_results(results_GBAD_health_Dynamic_v3)
 
-#### Getting the results for the THEORETICAL DAMAGE
+
+
+#### Getting the results for the THEORETICAL DAMAGE ####
 results_damage_MIP = stats1.damage_MIP
 results_damage_Dynamic = stats1.damage_Dynamic
 results_damage_Dynamic_v2 = stats1.damage_Dynamic_v2
+results_damage_Dynamic_v3 = stats1.damage_Dynamic_v3
 ### Get the average of theoretical damage for MIP and Dynamic
 #### Get the average number of drones destroyed for both results MIP and Dynamic
 avg_damage_list_MIP = average_results(results_damage_MIP)
 avg_damage_list_Dynamic = average_results(results_damage_Dynamic)
 avg_damage_list_Dynamic_v2 = average_results(results_damage_Dynamic_v2)
+avg_damage_list_Dynamic_v3 = average_results(results_damage_Dynamic_v3)
 
 
 
 
 ### Plotting data
 simulation_number = [k+1 for k in range(0,10)]
-fig, axs = plt.subplots(nrows=4,ncols=3, figsize=(15,7))
+fig, axs = plt.subplots(nrows=4,ncols=4, figsize=(15,7))
 for k in range (len(results_nbd_Dynamic)):
     axs[0][0].plot(time_for_simulation, results_nbd_MIP[k], linewidth ='1', linestyle='--')
     axs[0][0].set_title('MIP')
+    axs[0][3].plot(time_for_simulation, results_nbd_Dynamic_v3[k], linewidth ='1', linestyle='--' )
+    axs[0][3].set_title('Vf()=Indicator*Er*sum()')
+    axs[0][3].set_xlabel('Time in s')
+    axs[0][3].set_ylabel('Number of drones destroyed')
 
 
+    axs[1][3].plot(time_for_simulation, results_damage_Dynamic_v3[k], linewidth ='1', linestyle='--')
+    axs[1][3].set_xlabel('Time in s')
+    axs[1][3].set_ylabel('Damage capability')
     axs[3][0].plot(simulation_number, results_score_MIP, linewidth='2', linestyle='-')
-    axs[3][0].set_xlabel('Simulation')
+    axs[3][0].set_xlabel('Simulation number')
     axs[3][0].set_ylabel('Score')
+    axs[3][3].plot(simulation_number, results_score_Dynamic_v3, linewidth='2', linestyle='-')
+    axs[3][3].set_xlabel('Score')
+    axs[3][3].set_ylabel('Simulation number ')
+
+    axs[2][3].plot(time_for_simulation, results_GBAD_health_Dynamic_v3[k], linewidth ='1', linestyle='--')
+    axs[2][3].set_xlabel('Time in s')
+    axs[2][3].set_ylabel('GBAD Health')
     axs[2][0].plot(time_for_simulation,results_GBAD_health_MIP[k], linewidth='1', linestyle='--')
     axs[2][0].set_xlabel('Time in s')
     axs[2][0].set_ylabel('GBAD Health')
@@ -186,18 +237,19 @@ for k in range (len(results_nbd_Dynamic)):
     axs[1][1].plot(time_for_simulation, results_damage_Dynamic[k], linewidth='1', linestyle='--')
     axs[1][1].set_xlabel('Time in s')
     axs[1][1].set_ylabel('Damage capability')
-    axs[2][1].set_ylim(-0.5, 1.0)
+    axs[2][1].set_ylim(0, 1.0)
+    axs[2][1].set_xticks(np.arange(0,20))
     axs[2][1].set_xlabel('Time in s')
     axs[2][1].set_ylabel('GBAD Health')
     axs[1][1].set_xlabel('Time in s ')
     axs[3][1].set_ylabel('Score')
-    axs[3][1].set_xlabel('Simulation')
+    axs[3][1].set_xlabel('Simulation number ')
     axe2 = axs[1][1]
     axe2.sharey(axe1)
     axe3.sharey(axe4)
     axe4.sharey(axe5)
     axs[0][2].plot(time_for_simulation, results_nbd_Dynamic_v2[k], linewidth='1', linestyle='--')
-    axs[0][2].set_title('Vf()= indicator_function*(beta*Gr + alpha*Sr)*exp(delta*Dr + lamda*Dir)) ')
+    axs[0][2].set_title('Vf()= indicator_function*sum()*exp() ')
     axs[3][2].plot(simulation_number, results_score_Dynamic_v2, linewidth ='2', linestyle='-')
     axs[2][2].plot(time_for_simulation, results_GBAD_health_Dynamic_v2[k], linewidth ='1', linestyle='--')
     axs[1][2].plot(time_for_simulation, results_damage_Dynamic_v2[k], linewidth ='1', linestyle ='--')
@@ -213,21 +265,32 @@ fig.subplots_adjust(wspace = 0.5, hspace = 0.5 )
 axs[0][0].plot(time_for_simulation, avg_nbd_destroyed_MIP, linewidth='3', linestyle='-', color='black')
 
 axs[0][2].plot(time_for_simulation, avg_nbd_destroyed_Dynamic_v2, linewidth='3', linestyle ='-', color='black')
+axs[0][3].plot(time_for_simulation, avg_nbd_destroyed_Dynamic_v3, linewidth='3', linestyle ='-', color='black')
 axs[1][0].plot(time_for_simulation, avg_damage_list_MIP, linewidth='3', linestyle='-', color='black')
+axs[1][3].plot(time_for_simulation, avg_damage_list_Dynamic_v3, linewidth='3', linestyle='-', color='black')
+axs[2][3].plot(time_for_simulation, avg_GBAD_health_Dynamic_v3, linewidth='3', linestyle='-', color='black')
+
 
 axs[0][1].plot(time_for_simulation, avg_nbd_destroyed_Dynamic_v1, linewidth='3', linestyle='-', color='black')
 
 axs[1][1].plot(time_for_simulation, avg_damage_list_Dynamic, linewidth='3', linestyle='-', color='black')
 axs[1][2].plot(time_for_simulation, avg_damage_list_Dynamic_v2, linewidth ='3', linestyle='-', color='black')
 
+axs[2][0].plot(time_for_simulation, avg_GBAD_health_MIP, linewidth='3', linestyle='-', color='black')
+axs[2][1].plot(time_for_simulation, avg_GBAD_health_Dynamic_v1, linewidth='3', linestyle='-', color='black')
+axs[2][2].plot(time_for_simulation, avg_GBAD_health_Dynamic_v2, linewidth='3', linestyle='-', color='black')
 axs[0][0].set_xlabel('Time in s')
 axs[0][1].set_xlabel('Time in s')
 axs[0][0].set_ylabel('Number of drones alive')
 axs[0][1].set_ylabel('Number of drones alive')
+axs[0][2].set_ylabel('Number of drones alive')
+axs[0][2].set_xlabel('Time in s')
 axs[0][2].sharey(axs[0][1])
 axs[1][0].sharey(axs[1][2])
-
-
+axs[0][3].sharey(axs[0][2])
+axs[1][3].sharey(axs[1][2])
+axs[2][3].sharey(axs[2][2])
+axs[3][3].sharey(axs[3][2])
 
 
 plt.show()

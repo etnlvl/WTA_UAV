@@ -29,7 +29,7 @@ class Sim_dynamic_v3:
         self.time_to_kill_everybody = None
 
 
-    def simu_dynamic_v2(self):
+    def simu_dynamic_v3(self):
         for t in range (0, self.st, self.time_step) :
 
             print(f'Time Step = {t}')
@@ -50,8 +50,6 @@ class Sim_dynamic_v3:
             print(f'Length of drones_alive is : {len(drones_alive)}')
             reward_matrix = np.reshape(np.repeat([1]*len(self.weapons_with_ammo),len(drones_alive)), (len(self.weapons_with_ammo), -1))
             feed_mip = Feed_MIP(self.weapons_with_ammo, drones_alive, self.base, self.weights)
-            if t == int((3 / 5) * self.st):
-                feed_mip.weights[1] += 5
             dist = [np.linalg.norm(np.array([0, 0, 0]) - drone.pos) for drone in drones_alive]
             if len(dist) != 0:
                 self.targets_alive_ts.append(self.nbd - self.counter_drones_destroyed)
@@ -73,7 +71,7 @@ class Sim_dynamic_v3:
                     print(f'reward_matrix[index] ={reward_matrix[index]}')
                     print(f'length of drones_alive = {len(drones_alive)}')
                     print(f'length of dist= {len(dist)}')
-                    reward_matrix[index] = reward_matrix[index] * [feed_mip.get_value_function(drone) for drone in drones_alive]
+                    reward_matrix[index] = reward_matrix[index] * [feed_mip.get_value_function_v3(drone) for drone in drones_alive]
                     reward_matrix[index] = reward_matrix[index] * [w.range_window[0] <= distance <= w.range_window[1] for distance in dist]
 
                     if np.mod(self.downtime_timer, w.downtime) != 0:  ## check if  weapon is ready and re-loading.
@@ -89,7 +87,7 @@ class Sim_dynamic_v3:
 
                     drones_alive[i[1]].drone_get_destroyed(drones_alive[i[1]], self.weapons_with_ammo[i[0]], self.base, self)
 
-                ### Need to update the GBAD_Health and calculating the theoritical damage to the base
+                ### Need to update the GBAD_Health and calculating the theoretical damage to the base
                 sum_damage = 0
                 for drone in self.base.drone_list:
                     if drone.active == 1:

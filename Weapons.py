@@ -52,7 +52,7 @@ class Laser(Weapons):
     rc = 45  # maximum range
     destroy_time = 15  # time for the weapon to destroy the target
     reach_time = 0.002  # time for the beam to destroy the target
-    range_window = [38,22]
+    range_window = [22,38]
 
 class Grenade(Weapons):
     def __init__(self, name, reward_value, state_dependency, ammunition):

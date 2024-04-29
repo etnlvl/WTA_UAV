@@ -51,10 +51,6 @@ class Sim_dynamic_v2:
 
             print(f'Length of drones_alive is : {len(drones_alive)}')
             reward_matrix = np.reshape(np.repeat([1]*len(self.weapons_with_ammo),len(drones_alive)), (len(self.weapons_with_ammo), -1))
-            # if t== 5:
-            #     self.weights[1] += 3
-            #     self.weights[4] += 1
-            #     self.weights[0] += 2
 
             feed_mip = Feed_MIP(self.weapons_with_ammo, drones_alive, self.base, self.weights)
             print(f'time step = {t} and beta = {feed_mip.dynamic_weights[1]}')
