@@ -5,9 +5,10 @@ import Weapons
 import numpy as np
 from Drone import Drone
 from Value_function import Feed_MIP
+import matplotlib.pyplot as plt
 ### The goal of this version is to have dynamics factors so
 ### the evolution of the variables are not always done with the same threshold
-class Sim_dynamic_v3:
+class Sim_dynamic_v4:
 
     def __init__(self, st , time_step, base, weights) :
         self.st = st  # End time in simulation
@@ -30,10 +31,11 @@ class Sim_dynamic_v3:
         self.time_to_kill_everybody = None
 
 
-    def simu_dynamic_v3(self):
+    def simu_dynamic_v4(self):
         for t in range (0, self.st, self.time_step) :
 
             print(f'Time Step = {t}')
+
             self.the_time_steps.append(t)
             self.GBAD_health_state.append(self.base.health)
 
@@ -56,16 +58,18 @@ class Sim_dynamic_v3:
             if len(dist) != 0:
                 self.targets_alive_ts.append(self.nbd - self.counter_drones_destroyed)
                 ### Normalize the value to calculate the value function
-                max_dist = max(dist)
-                min_dist = min(dist)
-                for drone in drones_alive:
-                    drone.drone_dist = (np.linalg.norm(drone.pos - np.array([0, 0, 0])) - min_dist + 0.1)/(max_dist - min_dist+ 0.1)
-                print(f'the weapons with ammo at this time_step are : {self.weapons_with_ammo}')
-                ### Set the engagement zone version 2 with the indicator function
-
+                max_dist, min_dist = max(dist), min(dist)
                 for index, w in enumerate(self.weapons_with_ammo):
                     for drone in drones_alive:
-                        if w.range_window[0] <= np.linalg.norm(drone.pos - np.array([0, 0, 0])) <= w.range_window[1]:
+                        self.weights[4] = drone.get_lambda(w)
+
+
+                        print(f'At this time step {t} for drone {drone.idx} and weapon {w.name}, Weights = {self.weights}')
+
+                        drone.drone_dist = (np.linalg.norm(drone.pos - np.array([0, 0, 0])) - min_dist + 0.1) / (
+                                    max_dist - min_dist + 0.1)
+                        if w.range_window[0] <= np.linalg.norm(drone.pos - np.array([0, 0, 0])) <= w.range_window[1]:         ### if that drone is in range of that weapon
+                            position = drone.pos
                             drone.engagement_zone = 1
                         else:
                             drone.engagement_zone = 0
@@ -73,8 +77,9 @@ class Sim_dynamic_v3:
                     print(f'reward_matrix[index] ={reward_matrix[index]}')
                     print(f'length of drones_alive = {len(drones_alive)}')
                     print(f'length of dist= {len(dist)}')
-                    reward_matrix[index] = reward_matrix[index] * [feed_mip.get_value_function_v3(drone) for drone in drones_alive]
+                    reward_matrix[index] = reward_matrix[index] * [feed_mip.get_value_function_v4(drone) for drone in drones_alive]
                     reward_matrix[index] = reward_matrix[index] * [w.range_window[0] <= distance <= w.range_window[1] for distance in dist]
+                    print(f'function values of all drones for weapon {w.name} = {[feed_mip.get_value_function_v4(drone) for drone in drones_alive]}')
 
                     if np.mod(self.downtime_timer, w.downtime) != 0:  ## check if  weapon is ready and re-loading.
                         print(f' {w.name} is not available')
@@ -123,7 +128,7 @@ class Sim_dynamic_v3:
 # n = 4                 # number of weapons #
 # ### generating 30 random positions
 #
-# random_swarm = Random(30)
+# random_swarm = Random(100)
 # base = GBAD(np.array([0, 0, 0]), random_swarm.drone_list, [Gun1, Gun2, grenade1,
 #                                                                      Laser1])
 # print(f'Drone threat values = {[drone.threat_val for drone in random_swarm.drone_list]}')
@@ -131,22 +136,27 @@ class Sim_dynamic_v3:
 #
 # ## Run the simulation ##
 #
-# sim3 = Sim_dynamic_v2(20, 1, base, weigths)
-# number_of_drones_destroyed = sim3.simu_dynamic_v2()[0]
-# print(f'GBAD health at each time step : {sim3.GBAD_health_state}')
+# sim4 = Sim_dynamic_v4(80, 1, base, weigths)
+# number_of_drones_destroyed = sim4.simu_dynamic_v4()[0]
+# print(f'GBAD health at each time step : {sim4.GBAD_health_state}')
 # print(f'Results for the following weights: '
-#       f'alpha(Target survivability)= {sim3.weights[0]}, '
-#       f'beta(GBAD health)={sim3.weights[1]}, '
-#       f'gamma(Engagement zone) ={sim3.weights[2]}, '
-#       f'phi(Target Damage)={sim3.weights[3]}, '
-#       f'lambda(Target distance)={sim3.weights[4]}')
+#       f'alpha(Target survivability)= {sim4.weights[0]}, '
+#       f'beta(GBAD health)={sim4.weights[1]}, '
+#       f'gamma(Engagement zone) ={sim4.weights[2]}, '
+#       f'phi(Target Damage)={sim4.weights[3]}, '
+#       f'delta(Target distance)= function ')
 # print('*************')
 # print(f'GBAD HEALTH = {base.health}')
-# print(f'SCORE = {sim3.score}')
+# print(f'SCORE = {sim4.score}')
 # print(f'DRONES DESTROYED = {number_of_drones_destroyed}')
 # print('*************')
-# print(f'Time to kill all drones = {sim3.time_to_kill_everybody} s.')
+# print(f'Time to kill all drones = {sim4.time_to_kill_everybody} s.')
 #
 #
-# print(f'For the stats : the time steps = {sim3.the_time_steps} , number_of_targets_alive = {sim3.targets_alive_ts}')
-# print(f'Theoritical damage :{sim3.theo_damage}')
+# print(f'For the stats : the time steps = {sim4.the_time_steps} , number_of_targets_alive = {sim4.targets_alive_ts}')
+# print(f'Theoritical damage :{sim4.theo_damage}')
+#
+# fig, axs = plt.subplots(2,1,figsize=(8,5))
+# axs[0].plot(sim4.the_time_steps, sim4.targets_alive_ts, linewidth = '2', linestyle = '-')
+# axs[1].plot(sim4.the_time_steps, sim4.GBAD_health_state, linewidth ='2', linestyle ='-')
+# plt.show()

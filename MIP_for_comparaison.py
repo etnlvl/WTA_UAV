@@ -21,7 +21,9 @@ class Sim2:
         self.the_time_steps = []
         self.targets_alive_ts = []
         self.GBAD_health_state = []
+        self.nbd_drones_escaped = []
         self.theo_damage = []
+        self.surv_prob =  self.surv_weapons = {'Gun1': [], 'Gun2': [], 'Grenade1': [], 'Laser1': []}
         self.score = 0
         self.counter_drones_destroyed = 0
         self.time_to_kill_everybody = st
@@ -31,7 +33,10 @@ class Sim2:
 
     def next(self):                                                                                 ## This function proceed to the global simulation
         w_prob = [w.Pc for w in self.base.weapons]
-                                                                                                    ## Create cost/probability matrix
+        for weap in self.base.weapons:
+            for drone in self.base.drone_list:
+                self.surv_weapons[f'{weap.name}'].append(1 - weap.Pc)
+                ## Create cost/probability matrix
         for t in range (0,self.st, self.time_step):                                                 ## for the all simulation time, from t=0s to ts = time_simulation increased by t = time_step ##
             self.the_time_steps.append(t)
             self.targets_alive_ts.append(self.nbd - self.counter_drones_destroyed)
@@ -65,6 +70,7 @@ class Sim2:
             self.downtime_timer += self.time_step
             counter_active = 0
             sum_damage = 0
+            self.nbd_drones_escaped.append(len([i for i in self.drone_list if i.drone_escaped == True]))
             for alive in self.drone_list:                                                           ## Count the number of drones alive at each time step.
                 if alive.active == 1:
                     counter_active += 1
@@ -91,7 +97,7 @@ class Sim2:
 #
 # ### Get the initial swarm and all initialize the base ###
 # n = 4                 # number of weapons #
-# initial_swarm_random = Random(30)
+# initial_swarm_random = Random(100)
 # base_random = GBAD(np.array([0, 0, 0]), initial_swarm_random.drone_list, [Gun1, Gun2, grenade1,
 #                                                                      Laser1])
 # # initial_swarm = Ball(30, 5, np.array([50,30, 40]), 0.58)
@@ -100,7 +106,7 @@ class Sim2:
 #
 # ## Run the simulation ##
 #
-# sim2 = Sim2(20, 1, base_random)
+# sim2 = Sim2(80, 1, base_random)
 # number_of_drones_destroyed = sim2.next()[0]
 # print(f'GBAD HEALTH = {base_random.health}')
 # print(f'SCORE = {sim2.score}')

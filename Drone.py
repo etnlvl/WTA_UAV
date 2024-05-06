@@ -15,21 +15,20 @@ class Drone:
         self.idx = idx
         self.threat_val = 1     #~ the threat value will increase as the
                                         #distance to the base decrease.
-        self.speed = np.array([-3,-1,-2])    # ~100km/h
+        self.speed = 1.0   # ~100km/h
+        self.drone_escaped = False
         self.drone_dist = 0.60
         self.damage = 0.80 #0.2
-        self.target_survivability = 0.70
+        self.target_survivability = 1-0.635
         self.engagement_zone = 0.60
 
 
 
-    def drone_get_destroyed(self, drone, weapon, base, simu):
+    def drone_get_destroyed(self, drone, weapon,base, simu):
         if weapon.ammunition > 0:
             if np.random.rand() < weapon.Pc:  #### It means that the drone has been hit so the active value of it is then updated to 0.
                 ## we make the assumption that if the drone is reached, it is destroyed
-                print(f'Drone {drone.idx} has been destroyed by : {weapon.name}')
-
-
+                # print(f'Drone {drone.idx} has been destroyed by : {weapon.name}')
                 if drone.active == 1:
                     simu.counter_drones_destroyed += 1
                     simu.score += drone.threat_val
@@ -37,13 +36,13 @@ class Drone:
                 # base.drone_list.remove(drone)
                 return True
             else:  #### The drone will not be hit at this time step, so we need to upgrade the threat value.
-
+                print(f'drone miss : {drone.idx} with weapon {weapon}')
                 drone.target_survivability += 0.045
-                drone.engagement_zone += 0.02
-                print(f'Drone {drone.idx} has been missed by : {weapon.name}')
+                simu.surv_weapons[weapon.name][drone.idx] += 0.08*weapon.Pc
+                # print(f'Drone {drone.idx} has been missed by : {weapon.name}')
                 return False
-        else :
-            print(f'{weapon.name} is out of ammunition')
+        # else :
+        #         # print(f'{weapon.name} is out of ammunition')
         weapon.ammunition += -1
 
     def drone_get_check(self, weapon):
@@ -66,18 +65,24 @@ class Drone:
 
 
     def drone_escape(self, weapon, base):
-        if np.linalg.norm(self.pos - np.array([0, 0, 0])) < weapon.range_window[0]:
-            answer = True
-            print(f'drone_escape range of {weapon.name} ')
-            base.health -= 0.01 # self.damage
-        else :
-            answer = False
+        answer = False
+        if self.drone_escaped == False:
+            if np.linalg.norm(self.pos - np.array([0, 0, 0])) < weapon.range_window[0]:
+                answer = True
+                # print(f'drone_escape {self.idx} range of {weapon.name} ')
+                self.drone_escaped = True
+                base.health -= 0.01* self.damage
+
         return answer
 
 
 
     def update_drone_pos(self, time):  #### Update the position of the drone
-        self.pos += self.speed * time
+        direction_vec = - self.pos
+        velocity_vec = direction_vec / np.linalg.norm(direction_vec)
+        velocity_vec = np.array(velocity_vec * self.speed)
+        self.pos = np.array(self.pos, dtype= np.float64)
+        self.pos += velocity_vec * time
         self.drone_dist += 0.01
         # self.threat_val += 1
 
@@ -88,9 +93,35 @@ class Drone:
         self.threat_val = threat_val
         return self.threat_val
 
+    def get_lambda(self, weapon, base):
+        GBAD_health = base.GBAD_health
+        # if weapon.range_window[0] <= np.linalg.norm(self.pos) <= weapon.range_window[1]:
+        #     time_to_cross_weapon_range = (weapon.range_window[1]-weapon.range_window[0])/self.speed
+        #     time_to_get_out = (np.linalg.norm(self.pos)-weapon.range_window[0])/self.speed
+        #     t= 1 - (time_to_get_out/time_to_cross_weapon_range)
+        #     if t<0.05 :
+        #         return 6
+        #     elif 0.05 <= t < 0.10:
+        #         return 4
+        #     elif 0.10 < t < 0.50:
+        #         return 2
+        #     elif 0.5 <= t < 0.9:
+        #         return 1
+        #     elif 0.9 <= t <= 1:
+        #         return 0.5
+        # else:
+        #     return 0
+        if GBAD_health == 0:
+            return 5
+        else :
+            return 5*np.exp(-1/(1/GBAD_health)-1)
 
 
-        #
+
+
+
+
+
 
 
 
@@ -248,17 +279,18 @@ class Front (Drone):
 
 
 class Random (Drone):
-    def __init__(self, number_drones):
+    def __init__(self, number_drones, distance_to_base):
         self.number_drones = number_drones
         self.drone_list = []
+        self.distance_to_base = distance_to_base
         self.get_ini_pos_random()
 
     def get_ini_pos_random(self):
-        positions = np.random.randint(35, 55, size=(self.number_drones, 3))
-        for k in range(20):
+        positions = np.random.randint(30,35 , size=(self.number_drones, 3))
+        for k in range(int((2/3)*len(positions))):
             drone = Drone(positions[k], k, 0)
             self.drone_list.append(drone)
-        for d in range(20, 30):
+        for d in range(int((2/3)*len(positions)), len(positions)):
             dangerous_drone = Drone(positions[d], d, 0)
             dangerous_drone.damage = 1
             self.drone_list.append(dangerous_drone)
