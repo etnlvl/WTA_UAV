@@ -1,13 +1,15 @@
 from ortools.linear_solver import pywraplp
 
+"This file extracts the MIP module from ortools library and make it usefull "
+"for our optimization problem. This class is then used in the simulator to assign weapons to targets each time it is necessary."
 class MIP_Assignment:
     def __init__(self, probabilities, weapons, targets):
-        self.probabilities = probabilities
-        self.weapons = weapons
-        self.targets = targets
+        self.probabilities = probabilities                                      # Importing the probabilities of kills of the weapons
+        self.weapons = weapons                                                  # Importing the weapons.
+        self.targets = targets                                                  # Importing the targets.
         self.num_weapons = len(weapons)
         self.num_targets = len(targets)
-        self.assignement = []
+        self.assignement = []                                                   # Creating a list to save the results of the assignment.
         self.test = self.optimizeMIP()
 
     def optimizeMIP(self):

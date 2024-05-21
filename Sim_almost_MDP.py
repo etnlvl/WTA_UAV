@@ -4,7 +4,7 @@ import Weapons
 import numpy as np
 from gbad import GBAD
 from policy_assignment import Policy
-
+"This simulator tests an adaptation of the Markov Decision Process in our scenario."
 class Sim_Almost_MDP :
     def __init__(self, st, time_step, base):
         self.st = st  # End time in simulation

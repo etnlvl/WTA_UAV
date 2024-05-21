@@ -15,6 +15,8 @@ class Sim_nth_timestep:
         self.count_alive = []
         self.the_time_steps = []
         self.score = 0
+        self.counter_drones_destroyed = 0
+        self.surv_weapons = {'Gun1': [], 'Gun2': [], 'Grenade1': [], 'Laser1': []}
 
 
     def simulator(self, time_period):
@@ -101,7 +103,7 @@ class Sim_nth_timestep:
 
             for weapon_idx, weapon_assignment in assign.items():
                 weapon_to_use = Weapons.Weapons.find_weapon(Weapons, weapon_idx, base.weapons)
-                base.drone_list[weapon_assignment[time % time_period].idx].drone_get_destroyed(weapon_to_use)
+                base.drone_list[weapon_assignment[time % time_period].idx].drone_get_destroyed(base.drone_list[weapon_assignment[time % time_period].idx],weapon_to_use, base, self)
                 if base.drone_list[weapon_assignment[time % time_period].idx].active == 0:
                     self.score += base.drone_list[weapon_assignment[time % time_period].idx].threat_val
                     print(f'the added value to the score is : {base.drone_list[weapon_assignment[time % time_period].idx].threat_val}')

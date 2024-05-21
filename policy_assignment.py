@@ -2,6 +2,8 @@ import numpy as np
 import Drone
 from gbad import GBAD
 
+"This file determines the global policy for the entire simulator using a Markov Decision Process. "
+"The first policy for one weapon is determined for all time steps and then, other weapon's policies are triggered. "
 class Policy :
     def __init__(self,weapon_set, n_targets, n_assignments):
         self.weapon_set = weapon_set        ##### [Gun1, Gun2, Grenade1, Laser1]

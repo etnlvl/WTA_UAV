@@ -1,7 +1,8 @@
 import Drone
 import numpy as np
-
-
+"This file is used to define all the characteristics of the weapons such as the total amount of ammunitions"
+"through the simulation, the probability of kill, the downtime, the window range etc. "
+"Some methods used in this file were used as well in the simulator to access some weapon's properties."
 
 class Weapons:
     def __init__(self, reward_value, state_dependency):
@@ -24,14 +25,14 @@ class Gun(Weapons):
         self.name = name
         self.miss_counter = 0
         self.engaged = False
-        self.Pc = 0.635
+        self.Pc = 0.65
         self.transition_value = np.array([[1 - self.Pc],[self.Pc]])
         self.downtime = 0.5
         self.ammunition = ammunition
     rc = 100
     destroy_time = 1
     reach_time = 0.5
-    range_window = [45, 50]
+    range_window = [25,60]
 
 class Laser(Weapons):
     def __init__(self, name, reward_value, state_dependency, ammunition):
@@ -42,7 +43,7 @@ class Laser(Weapons):
         self.name = name
         self.miss_counter = 0
         self.engaged = False
-        self.Pc = 0.80
+        self.Pc = 0.55
         self.transition_value = np.array([[1 - self.Pc], [self.Pc]])
         self.downtime = 0.5
         self.ammunition = ammunition
@@ -52,7 +53,7 @@ class Laser(Weapons):
     rc = 45  # maximum range
     destroy_time = 15  # time for the weapon to destroy the target
     reach_time = 0.002  # time for the beam to destroy the target
-    range_window = [22,38]
+    range_window = [25,60]
 
 class Grenade(Weapons):
     def __init__(self, name, reward_value, state_dependency, ammunition):
@@ -62,7 +63,7 @@ class Grenade(Weapons):
         self.name = name
         self.miss_counter = 0
         self.engaged = False
-        self.Pc = 0.4256
+        self.Pc = 0.4
         self.transition_value = np.array([[1 - self.Pc], [self.Pc]])
         self.downtime = 0.5
         self.ammunition = ammunition

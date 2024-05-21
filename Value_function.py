@@ -4,6 +4,8 @@ from gbad import GBAD
 import Weapons
 import numpy as np
 
+"This script is fundamental to build the dynamic aspect of the algorithm as all the values function values "
+"are directly calculated here. Different methods are built in this file to tests different shapes of the most appropriated value function."
 
 class Feed_MIP :
     def __init__(self, weapons, targets, base, weights):
@@ -38,7 +40,7 @@ class Feed_MIP :
         Er = target.engagement_zone
         Dr = target.damage
         Dir = target.drone_dist
-        self.V_function_v2 = ((self.static_weights[2]*Er+ self.static_weights[3]*Dr)**3)*np.exp(self.static_weights[0]*Sr + self.static_weights[4]*Dir + self.static_weights[1]*Gr)
+        self.V_function_v2 = ((self.static_weights[2]*Er+ self.static_weights[1]*weapon.Pc +  self.static_weights[3]*Dr)**3)*np.exp(self.static_weights[0]*Sr + self.static_weights[4]*(1-Dir) + self.static_weights[1]*Gr)
         return self.V_function_v2
 
     def get_value_function_v3(self, target) :
@@ -48,7 +50,7 @@ class Feed_MIP :
         Dr = target.damage
         Dir = target.drone_dist
         self.V_function_v3 = self.static_weights[2] * Er *(self.static_weights[0] * Sr + self.static_weights[1] * Gr +
-                              self.static_weights[3] * Dr + self.static_weights[4] * Dir)
+                              self.static_weights[3] * Dr + self.static_weights[4] *(1-Dir))
         return self.V_function_v3
 
     def get_value_function_v4(self, target) :
@@ -58,7 +60,7 @@ class Feed_MIP :
         Dr = target.damage
         Dir = target.drone_dist
         self.V_function_v4 = self.static_weights[2] * Er *(self.static_weights[0] * Sr + self.static_weights[1] * Gr +
-                              self.static_weights[3] * Dr + self.static_weights[4] * Dir)
+                              self.static_weights[3] * Dr + self.static_weights[4] *(1-Dir))
         return self.V_function_v4
 
 

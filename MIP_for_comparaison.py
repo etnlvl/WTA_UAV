@@ -1,10 +1,13 @@
 from Drone import Ball
+from Drone import Line
+from Drone import Wave
 from MIP_Assignment import MIP_Assignment
 from gbad import GBAD
 import Weapons
 import numpy as np
 from Drone import Random
-
+import matplotlib.pyplot as plt
+import statistics
 
 class Sim2:
 
@@ -84,11 +87,11 @@ class Sim2:
         return self.counter_drones_destroyed, self.score
 
 
-###### Import the parameters for the global simulation #####
-###Get the initial position and the type of swarm desired#####
+##### Import the parameters for the global simulation #####
+##Get the initial position and the type of swarm desired#####
 
-#
-### Get the weapons ###
+
+# Get the weapons ###
 # Gun1 = Weapons.Gun('Gun1',50,np.array([False, False]), 10)
 # Gun2 = Weapons.Gun('Gun2',50,np.array([False, False]), 10)
 # grenade1 = Weapons.Grenade('Grenade1', 50, np.array([False, False]), 7)
@@ -97,19 +100,79 @@ class Sim2:
 #
 # ### Get the initial swarm and all initialize the base ###
 # n = 4                 # number of weapons #
-# initial_swarm_random = Random(100)
-# base_random = GBAD(np.array([0, 0, 0]), initial_swarm_random.drone_list, [Gun1, Gun2, grenade1,
+# swarm = Line(100, np.array([50, 40, 50]), 2, np.array([-1, -0.2, 0]))
+# base= GBAD(np.array([0, 0, 0]), swarm.drone_list, [Gun1, Gun2, grenade1,
 #                                                                      Laser1])
-# # initial_swarm = Ball(30, 5, np.array([50,30, 40]), 0.58)
+# print(f'etat de la base : {base.drone_list} and length of it : {len(base.drone_list)}')
+#
+# # initial_swarm = Front(100, np.array([50, 30, 40]), 0.58, np.array([-1, -1, -0.5]))
 # # base = GBAD(np.array([0, 0, 0]), initial_swarm.drone_list, [Gun1, Gun2, grenade1,
 # #                                                                      Laser1])
 #
 # ## Run the simulation ##
 #
-# sim2 = Sim2(80, 1, base_random)
+# sim2 = Sim2(60, 1, base)
 # number_of_drones_destroyed = sim2.next()[0]
-# print(f'GBAD HEALTH = {base_random.health}')
+# print(f'GBAD HEALTH = {base.health}')
 # print(f'SCORE = {sim2.score}')
 # print(f'DRONES DESTROYED = {number_of_drones_destroyed}')
 # print('*************')
 # print(f'Time to kill all drones = {sim2.time_to_kill_everybody} s.')
+#
+
+
+
+
+
+
+
+
+# number_of_simulations = 10
+# drones_destroyed_for_simulation =[]
+#
+#
+# for k in range(number_of_simulations) :
+#     Gun1 = Weapons.Gun('Gun1', 50, np.array([False, False]), 10)
+#     Gun2 = Weapons.Gun('Gun2', 50, np.array([False, False]), 10)
+#     grenade1 = Weapons.Grenade('Grenade1', 50, np.array([False, False]), 7)
+#     Laser1 = Weapons.Laser('Laser1', 50, np.array([False, False]), 12)
+#     Laser2 = Weapons.Laser('Laser2', 50, np.array([False, False]), 6)
+#     swarm = Line(100, np.array([50, 40, 50]), 2, np.array([-1, -0.2, 0]))
+#     base= GBAD(np.array([0, 0, 0]), swarm.drone_list, [Gun1, Gun2, grenade1,
+#                                                                          Laser1])
+#     sim = Sim2(50,1, base)
+#     sim.next()
+#     drones_destroyed_for_simulation.append(sim.targets_alive_ts)
+#
+#
+#
+# def average_results(results):
+#     new_lists = [[] for _ in range(len(results[0]))]
+#     # Parcourir chaque sous-liste et ajouter les éléments aux nouvelles listes
+#     for sublist in results:
+#         for i, elem in enumerate(sublist):
+#             new_lists[i].append(elem)
+#     avg_list = []
+#     # Afficher les nouvelles listes
+#     for lst in new_lists:
+#         avg_list.append(statistics.mean(lst))
+#     return avg_list
+#
+# average_results_random = average_results(drones_destroyed_for_simulation)
+# for k in range(len(drones_destroyed_for_simulation)):
+#     plt.plot(drones_destroyed_for_simulation[k], linestyle='--')
+#
+#
+# plt.plot(average_results_random, linestyle='-', linewidth ='3', color='black', label='Average above all simulations')
+# initial_swarm_random= Ball(100, 5, np.array([50, 30, 40]), 0.58)
+# base_random = GBAD(np.array([0, 0, 0]), initial_swarm_random.drone_list, [Weapons.Gun('Gun1', 50, np.array([False, False]), 10),
+#                                                                           Weapons.Gun('Gun2', 50, np.array([False, False]), 10),
+#                                                                           Weapons.Grenade('Grenade1', 50, np.array([False, False]), 7),
+#                                                                      Weapons.Laser('Laser1', 50, np.array([False, False]), 12)])
+# plt.ylim(0, 105)
+# plt.title(f'Line swarm of {initial_swarm_random.number_drones} identical drones, with {len(base_random.weapons)} weapons on base.')
+# plt.xlabel('Times in s')
+# plt.ylabel('Number of drones alive')
+#
+#
+# plt.show()

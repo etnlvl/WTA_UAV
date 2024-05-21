@@ -5,7 +5,9 @@ import Weapons
 import numpy as np
 from Drone import Drone
 from policy_assignment import Policy
-
+"This file define the first simulator created using the MIP assignment module of OR-tools library"
+"In this simulator, an update and an assignment were made at each single time step of the simulation. "
+"All the necessary variables useful to run this file are imported from the other scripts Drone, gbad, Weapons etc.  "
 
 class Sim2:
 
@@ -22,7 +24,12 @@ class Sim2:
         self.the_time_steps = []
         self.weapons_with_ammo = []
         self.counter_drones_destroyed =0
+        self.targets_alive_ts = []
+        self.GBAD_health_state = []
+        self.theo_damage = []
+        self.surv_weapons = {'Gun1': [], 'Gun2': [], 'Grenade1': [], 'Laser1': []}
         self.score = 0
+        self.next()
 
     "Sim2 and its function Sim2.next() makes run the battle by allocating weapons to targets with the MIP algorithm taken from the library OR tools"
 
@@ -31,6 +38,7 @@ class Sim2:
             print(f' Time Step = {t}')
             ### Creating the list of weapons with ammos
             self.weapons_with_ammo = []
+            self.GBAD_health_state.append(self.base.health)
             for weapon in self.base.weapons:
                 if weapon.ammunition > 0:
                     self.weapons_with_ammo.append(weapon)
@@ -46,10 +54,11 @@ class Sim2:
 
             cost = np.reshape(np.repeat(w_prob, len(self.weapons_with_ammo)), (len(self.weapons_with_ammo), len(self.weapons_with_ammo)))
 
-            dist2 = self.base.get_highest_TV_drones(len(self.weapons_with_ammo))[1]
+            dist2 = self.base.get_closest_drones(len(self.weapons_with_ammo))[1]
             print(f'dist2 = {[element.threat_val for element in dist2]}')
             dist3 = [np.linalg.norm(np.array([0,0,0]) - drone.pos) for drone in dist2]
             print(f'dist3 = {dist3}')
+            self.targets_alive_ts.append(self.nbd - self.counter_drones_destroyed)
             for index, w in enumerate(self.weapons_with_ammo):
 
                 cost[index] = cost[index] * [w.range_window[0] <= d <= w.range_window[1] for d in dist3]                                ## set a zero probability in the cost matrix if the drone is out of range of the weapon
@@ -60,7 +69,7 @@ class Sim2:
             print(f'The cost is {cost}')
             self.assignment = MIP_Assignment(cost, self.weapons_with_ammo, self.base.highest_TV_drones)     ## assign the weapons to the closest drones.
             for i in self.assignment.assignement:                                                        ## go through the allocated drones.
-                self.base.highest_TV_drones[i[1]].drone_get_destroyed(self.base.highest_TV_drones[i[1]], self.weapons_with_ammo[i[0]], self.base, self)         ## fire the allocated drones.
+                self.base.closest_drones[i[1]].drone_get_destroyed(self.base.closest_drones[i[1]], self.weapons_with_ammo[i[0]], self.base, self)         ## fire the allocated drones.
 
             for k in self.drone_list:                                                               ## update the drone status after the shooting.
                 if k.active == 1:
@@ -84,14 +93,13 @@ Laser2 = Weapons.Laser('Laser2', 50, np.array([False, False]), 6)
 
 ### Get the initial swarm and all initialize the base ###
 n = 4                 # number of weapons #
-random_swarm = Random(30)
+random_swarm = Random(100, 60)
 base = GBAD(np.array([0, 0, 0]), random_swarm.drone_list, [Gun1, Gun2, grenade1,
                                                                      Laser1])
 
 ## Run the simulation ##
 
-sim2 = Sim2(20, 1, base)
-number_of_drones_destroyed = sim2.nbd - sim2.next()[1][-1]
+sim2 = Sim2(60, 1, base)
 print(f'GBAD HEALTH = {base.health}')
 print(f'SCORE = {sim2.score}')
-print(f'DRONES DESTROYED = {number_of_drones_destroyed}')
+print(f'DRONES DESTROYED = {sim2.targets_alive_ts}')

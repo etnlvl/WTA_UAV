@@ -1,10 +1,12 @@
 from Drone import Random
 from MIP_Assignment import MIP_Assignment
 from gbad import GBAD
+from Drone import Line
 import matplotlib.pyplot as plt
 import Weapons
 import numpy as np
 from Drone import Drone
+import statistics
 from Value_function import Feed_MIP
 
 class Sim_dynamic:
@@ -30,6 +32,7 @@ class Sim_dynamic:
         self.time_to_kill_everybody = None
         self.list_of_variables = {'Gun1': [], 'Gun2' : [], 'Grenade1' : [], 'Laser1' : [] }
         self.surv_weapons = {'Gun1': [], 'Gun2': [], 'Grenade1': [], 'Laser1': []}
+        self.drones_assigned =[]
     def simu_dynamic(self):
         dist2 = {drone: np.linalg.norm(np.array([0, 0, 0]) - drone.pos) for drone in self.drone_list}
         furthest_drone = max(dist2, key=dist2.get)
@@ -82,7 +85,10 @@ class Sim_dynamic:
 
                 print(f' Reward_matrix to feed the MIP = {reward_matrix}')
                 self.assignment = MIP_Assignment(reward_matrix, self.weapons_with_ammo, drones_alive)
+                self.drones_assigned.append([self.assignment.assignement])
+                print(f'drones assigned : {self.drones_assigned}')
                 for i in self.assignment.assignement:
+                    print(f'assignment shape : {i}')
 
                     drones_alive[i[1]].drone_get_destroyed(drones_alive[i[1]], self.weapons_with_ammo[i[0]], self.base, self)
 
@@ -109,7 +115,7 @@ class Sim_dynamic:
 ###Get the initial position and the type of swarm desired#####
 
 #
-# Get the weapons ###
+
 # Gun1 = Weapons.Gun('Gun1', 50, np.array([False, False]), 10)
 # Gun2 = Weapons.Gun('Gun2', 50, np.array([False, False]), 10)
 # grenade1 = Weapons.Grenade('Grenade1', 50, np.array([False, False]), 7)
@@ -134,6 +140,111 @@ class Sim_dynamic:
 # print(f' for the gun and furthest_drone : {results_variables['Gun1']}')
 # print(f' size of it : {len(results_variables['Gun1'])}')
 # print(f' Survivavibility : {sim3.surv_weapons}')
+# target_alive = []
+# gbad = []
+# damage_cap = []
+# score_of_simu = []
+#
+# target_alive2 = []
+# gbad2 = []
+# damage_cap2 = []
+# score_of_simu2 = []
+# nb_simulations = 10
+# def average_results(results):
+#     new_lists = [[] for _ in range(len(results[0]))]
+#     # Parcourir chaque sous-liste et ajouter les éléments aux nouvelles listes
+#     for sublist in results:
+#         for i, elem in enumerate(sublist):
+#             new_lists[i].append(elem)
+#     avg_list = []
+#     # Afficher les nouvelles listes
+#     for lst in new_lists:
+#         avg_list.append(statistics.mean(lst))
+#     return avg_list
+#
+#
+#
+# fig, axs = plt.subplots(2,1, figsize=(9, 7))
+#
+# for k in range(nb_simulations) :
+#     Gun1 = Weapons.Gun('Gun1', 50, np.array([False, False]), 10)
+#     Gun2 = Weapons.Gun('Gun2', 50, np.array([False, False]), 10)
+#     grenade1 = Weapons.Grenade('Grenade1', 50, np.array([False, False]), 7)
+#     Laser1 = Weapons.Laser('Laser1', 50, np.array([False, False]), 12)
+#     Laser2 = Weapons.Laser('Laser2', 50, np.array([False, False]), 6)
+#     swarm = Random(100, 60)
+#     base = GBAD(np.array([0, 0, 0]), swarm.drone_list, [Gun1, Gun2, grenade1,
+#                                                                Laser1])
+#     simu = Sim_dynamic(60, 1, base, [4, 2, 1, 2, 1.75])
+#     simu.simu_dynamic()
+#
+#
+#     Gun12 = Weapons.Gun('Gun1', 50, np.array([False, False]), 10)
+#     Gun22 = Weapons.Gun('Gun2', 50, np.array([False, False]), 10)
+#     grenade12 = Weapons.Grenade('Grenade1', 50, np.array([False, False]), 7)
+#     Laser12 = Weapons.Laser('Laser1', 50, np.array([False, False]), 12)
+#     Laser22 = Weapons.Laser('Laser2', 50, np.array([False, False]), 6)
+#     swarm2 = Random(100, 60)
+#     base2 = GBAD(np.array([0, 0, 0]), swarm2.drone_list, [Gun12, Gun22, grenade12,
+#                                                         Laser12])
+#     simu2 = Sim_dynamic(60, 1, base2, [1, 1, 1, 1, 1])
+#     simu2.simu_dynamic()
+#     target_alive2.append(simu2.targets_alive_ts)
+#     gbad2.append(simu2.GBAD_health_state)
+#     damage_cap2.append(simu2.theo_damage)
+#     score_of_simu2.append(simu2.score)
+#     print(f'targets alive : {simu.targets_alive_ts}')
+#     # axs[0].plot(simu.GBAD_health_state, linewidth='1', linestyle ='--')
+#     # axs[0].set_xlabel('Time in s')
+#     # axs[0].set_ylabel('GBAD health')
+#
+#     # axs[1].plot(simu.theo_damage, linewidth='1', linestyle ='--')
+#     # axs[1].set_xlabel('Time in s')
+#     # axs[1].set_ylabel('Damage capability')
+#     target_alive.append(simu.targets_alive_ts)
+#     gbad.append(simu.GBAD_health_state)
+#     damage_cap.append(simu.theo_damage)
+#     score_of_simu.append(simu.score)
+#
+# average_targets_alive = average_results(target_alive)
+# average_health = average_results(gbad)
+# average_damage = average_results(damage_cap)
+# average_targets_alive2 = average_results(target_alive2)
+# average_health2 = average_results(gbad2)
+# average_damage2 = average_results(damage_cap2)
+# print(f'average targets alive 1= {average_targets_alive}')
+# print(f'average targets alive 2= {average_targets_alive2}')
+# axs[0].plot(average_targets_alive, linewidth ='3', linestyle= '-', color='r', label=f'weights={simu.weights}')
+# axs[0].plot(average_targets_alive2, linewidth ='3', linestyle= '-', color='b', label=f'weights = {simu2.weights}')
+# axs[0].set_ylabel('Number of drones alive')
+# axs[0].set_xlabel('Time in s')
+# axs[0].legend(loc='upper right')
+# axs[0].set_title('Average on 10 simulations for number of drone alive')
+#
+# axs[1].plot(average_health, linewidth='3', linestyle='-', color='r', label=f'weights={simu.weights}')
+# axs[1].plot(average_health2, linewidth='3', linestyle='-', color='b', label=f'weights={simu2.weights}')
+# axs[1].set_ylabel('GBAD health')
+# axs[1].set_xlabel('Time in s')
+# axs[1].set_title('Average on 10 simulations for GBAD HEALTH')
+# plt.show()
+# axs[1].plot(score_of_simu, linewidth ='3', linestyle= '-', color='black')
+# axs[0].set_ylim(0,105)
+# axs[1].sharey(axs[0])
+# axs[1].plot([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], score_of_simu, "-gs")
+# axs[1].set_ylim(60,105)
+# axs[1].set_xlabel('Simulation number')
+# axs[1].set_ylabel('Score')
+# axs[1].plot(average_damage, linewidth='3', linestyle ='-', color='black')
+
+
+
+
+
+###
+
+
+
+###
 # Sr_gun1 = []
 # Gr_gun1 = []
 # Er_gun1 = []

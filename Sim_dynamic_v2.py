@@ -6,9 +6,9 @@ import numpy as np
 from Drone import Drone
 from Value_function import Feed_MIP
 
- # "This version of the dynamic algorithm is made so that the engagement zone variable is now "
- # "in the value function as a product with an indicator function (E_r =1 if target i is in range of "
- # "weapon j and E_r= 0 otherwise"
+"This version of the dynamic algorithm is made so that the engagement zone variable is now "
+"in the value function as a product with an indicator function (E_r =1 if target i is in range of "
+"weapon j and E_r= 0 otherwise"
 
 class Sim_dynamic_v2:
 
@@ -32,6 +32,7 @@ class Sim_dynamic_v2:
         self.weights = weights
         self.score = 0
         self.time_to_kill_everybody = None
+        self.drones_assigned= []
 
 
     def simu_dynamic_v2(self):
@@ -91,6 +92,8 @@ class Sim_dynamic_v2:
                 # print(f'The assignment is : {self.assignment.assignement}')
                 # print(f'Drones in drones_alive = {[drone.idx for drone in drones_alive]}')
                 # print(f'drones indexes assigned = {[i[1] for i in self.assignment.assignement]}')
+                self.drones_assigned.append(self.assignment.assignement)
+                print(f'drones assigned : {self.drones_assigned}')
                 for i in self.assignment.assignement:
 
                     drones_alive[i[1]].drone_get_destroyed(drones_alive[i[1]], self.weapons_with_ammo[i[0]], self.base, self)
